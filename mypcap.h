@@ -260,6 +260,7 @@ unsigned  printUDPinfo( const udpHdr_t *p ) ;
 /*-------------------------*/
 /*        PROJECT 3        */
 /*-------------------------*/
+void processRequestPacket( packetHdr_t *pktHdr, uint8_t ethFrame[] ); 
 int writePCAPhdr ( char *fname, pcap_hdr_t *p); 
 int readARPmap (char *arpDB); 
 uint16_t inet_checksum (void * data, uint16_t lenBytes); 

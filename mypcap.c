@@ -460,6 +460,31 @@ unsigned printUDPinfo( const udpHdr_t *p )
 /*-------------------------------------------------------------------------*/
 
 /*
+You have just read a packet from the input PCAP file where
+"pktHdr" points at its packet header, and its captured Ethernet frame is in ethFrame[]. 
+You shall print the 
+  destination MAC of this packet, 
+  and whether that address is one of yours. 
+
+If this packet destination MAC does NOT target your machine, 
+  Simply return from here. 
+  - Do NOT even copy it to the output PCAP file. -
+
+Otherwise: 
+  Respond only to an incoming ARP Request or proper ICMP Echo Request targeting your
+  machine as follows:
+    Copy the request packet (header + Ethernet frame) as is, 
+    followed by your reply packet (header + Ethernet frame) to the output PCAP file.
+  For your ICMP Echo reply packet:
+    the starting IP Identification must be 1000 (in decimal), 
+      then incremented by 1 for successive IP datagrams you generate to the output.
+    The IP flags should indicate "Do Not Fragment"
+*/
+void processRequestPacket( packetHdr_t *pktHdr, uint8_t ethFrame[] ){
+
+}
+
+/*
 Open the output PCAP file ‘fname’ and write its global header 
 from pre-filled info in buffer 'p'
 
