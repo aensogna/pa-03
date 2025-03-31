@@ -11,23 +11,30 @@ File Name: p1.c
 void
 usage (char *cmd)
 {
-  printf ("Usage: %s fileName\n", cmd);
+  printf ("Usage: %s input PCAP (.pcap), output PCAP name (.pcap), ARP Pairs (.dat)\n", cmd);
 }
 /*-------------------------------------------------------------------------*/
 int
 main (int argc, char *argv[])
 {
   char *pcapIn;
+  char *pcapOut;
+  char *arpData; 
   pcap_hdr_t pcapHdr;
   packetHdr_t pktHdr;
   uint8_t ethFrame[MAXFRAMESZ + 30000];
   etherHdr_t *frameHdrPtr = (etherHdr_t *)ethFrame;
-  if (argc < 2)
+  if (argc < 3)
     {
       usage (argv[0]);
       exit (EXIT_FAILURE);
     }
+  
+  // Input files
   pcapIn = argv[1];
+  pcapOut = argv[2]; 
+  arpData = argv[3]; 
+
   printf ("\nProcessing PCAP file '%s'\n\n", pcapIn);
   // Read the global header of the pcapInput file
   // By calling readPCAPhdr().

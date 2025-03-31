@@ -251,6 +251,16 @@ unsigned  printICMPinfo( const icmpHdr_t * ) ;
 unsigned  printTCPinfo( const tcpHdr_t *p ) ;
 unsigned  printUDPinfo( const udpHdr_t *p ) ;
 
+/*-------------------------*/
+/*        PROJECT 3        */
+/*-------------------------*/
+int writePCAPhdr ( char *fname, pcap_hdr_t *p); 
+int readARPmap (char *arpDB); 
+uint16_t inet_checksum (void * data, uint16_t lenBytes); 
+bool myIP (IPv4addr someIP, uint8_t **ptr); 
+bool myMAC (uint8_t someMAC[]); 
+
+
 // Possible Future Extension
 //void    printIPoptions(  const uint8_t *s , uint8_t optLen ) ;
 //void    printTCPoptions( const uint8_t *s , uint8_t optLen ) ;

@@ -452,6 +452,62 @@ unsigned printUDPinfo( const udpHdr_t *p )
 }
 
 /*-------------------------------------------------------------------------*/
+/* Project 3*/
+/*-------------------------------------------------------------------------*/
+
+/*
+Open the output PCAP file ‘fname’ and write its global header 
+from pre-filled info in buffer 'p'
+
+Returns: 0 on success, -1 on failure
+*/
+int writePCAPhdr ( char *fname, pcap_hdr_t *p){
+  return 0; 
+}
+
+/*
+Read IP-to-MAC mappings from file 'arpDB' into the global array:
+  arpmap_t myARPmap[ MAXARPMAP ] ;
+
+Returns: the actual number of mappings read from the file 
+  (setting the global 'mapSize' to that same number), or -1 on failure
+*/
+int readARPmap (char *arpDB){
+  return 0; 
+}
+
+/*
+Compute and return the Internet Checksum using One-Complement Arithmetic
+on an array of 16-bit values pointed to by 'data', 
+which has a total of ' lenBytes ' bytes (may be an even or odd value)
+*/
+uint16_t inet_checksum (void * data, uint16_t lenBytes) {
+  return 0; 
+}
+
+
+/*
+Check if 'someIP' is one of mine. If not mine, and if ptr is not NULL, then set *ptr to NULL.
+If 'someIP' is mine, and if ptr is not NULL , then set *ptr to point at the corresponding MAC
+value inside the global 'myARPmap[]' array. Note that no copying of the actual bytes of the MAC
+address is done.
+*/
+bool myIP (IPv4addr someIP, uint8_t **ptr) {
+  return false; 
+}
+
+
+/*
+Check if 'someMAC' is one of mine. 
+Note that a MAC broadcast address must also be treated as mine
+*/
+bool myMAC (uint8_t someMAC[]) {
+  return false; 
+}
+
+
+
+/*-------------------------------------------------------------------------*/
 /* Suggested Utility Functions */
 /*-------------------------------------------------------------------------*/
 /* Convert IPv4 address 'ip' into a dotted-decimal string in 'ipBuf'.
