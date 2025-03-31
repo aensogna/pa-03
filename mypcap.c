@@ -24,6 +24,10 @@ int NORMMAGIC = 0xa1b2c3d4;
 int SWAPMAGIC = 0xd4c3b2a1;
 int NANOMAGIC = 0xa1b23c4d;
 
+arpmap_t myARPmap[ MAXARPMAP ] ; // List of my IPs, their MACs
+int mapSize = 0; // Number of mapping pairs read into above array
+FILE *pcapOutput = NULL ;
+
 /* ***************************** */
 /*          PROJECT 1            */
 /* ***************************** */

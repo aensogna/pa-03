@@ -224,6 +224,12 @@ typedef struct __attribute__((__packed__))
 
 } udpHdr_t ;
 
+/* IP-to-MAC mapping database used by ARP */
+typedef struct {
+    uint32_t    ip ;
+    uint8_t     mac[ETHERNETHLEN] ;
+} arpmap_t ;
+
 /*-------------------------------------------------------------------------*/
 /*           Interface Functions */
 
