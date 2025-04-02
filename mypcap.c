@@ -482,7 +482,17 @@ Otherwise:
     The IP flags should indicate "Do Not Fragment"
 */
 void processRequestPacket( packetHdr_t *pktHdr, uint8_t ethFrame[] ){
-  etherHdr_t *frameHdrPtr = (etherHdr_t *)ethFrame;
+  uint8_t macBuf[MAXMACADDRLEN]; 
+
+  const etherHdr_t *frPtr = (const etherHdr_t *)ethFrame;
+  macToStr (frPtr->eth_dstMAC, macBuf);
+  printf ("      %-21s", macBuf);
+
+  if (myMAC(macBuf)){
+    printf("   is mine"); 
+  } else {
+    printf("   is NOT mine"); 
+  }
   
 }
 
@@ -509,7 +519,9 @@ int readARPmap (char *arpDB){
   char *token; 
   char *IPtoken; 
   int counter = 0;  
-  char IPString[MAXIPv4ADDRLEN] = ""; 
+  unsigned int values[6]; 
+  char IPString[MAXIPv4ADDRLEN]; 
+  char MACBuff[MAXMACADDRLEN]; 
 
   file = fopen(arpDB, "r"); 
   if (file == NULL){
@@ -522,11 +534,21 @@ int readARPmap (char *arpDB){
     inet_pton(AF_INET, token, &myARPmap[counter].ip); 
 
     // MAC
-    token = strtok(NULL, "  "); 
-    strncpy(myARPmap[counter].mac, token, strlen(token) - 1); 
+    token = strtok(NULL, "\n"); 
+
+    if (!(sscanf(token, "%x:%x:%x:%x:%x:%x", &values[0], &values[1], 
+        &values[2], &values[3], &values[4], &values[5]) == 6)) {
+      
+      return -1; 
+    }
+    for (int i = 0; i < ETHERNETHLEN; i++){
+      myARPmap[counter].mac[i] = (uint8_t) values[i]; 
+    }
     
     inet_ntop(AF_INET, &myARPmap[counter].ip, IPString, MAXIPv4ADDRLEN); 
-    printf("  %d:  %s\t%s\n", counter, IPString, myARPmap[counter].mac); 
+    
+    macToStr(myARPmap[counter].mac, MACBuff); 
+    printf("  %d:  %s\t%s\n", counter, IPString, MACBuff); 
 
     // Increment counter
     counter++; 
@@ -566,6 +588,16 @@ Check if 'someMAC' is one of mine.
 Note that a MAC broadcast address must also be treated as mine
 */
 bool myMAC (uint8_t someMAC[]) {
+  char MACBuff[MAXMACADDRLEN]; 
+
+  for (int i = 0; i < mapSize; i++){
+    macToStr(myARPmap[i].mac, MACBuff);
+    //printf(" \nTest: \n%s \t %s", someMAC, MACBuff); 
+    if ((strncmp(someMAC, MACBuff, MAXMACADDRLEN) == 0) || (strncmp("ff:ff:ff:ff:ff:ff", someMAC, MAXMACADDRLEN) == 0)){
+      return true; 
+    } 
+    memset(MACBuff, 0, MAXMACADDRLEN); 
+  }
   return false; 
 }
 

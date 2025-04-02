@@ -63,7 +63,7 @@ main (int argc, char *argv[])
   printf("\n\n    Frame #      Its Destination MAC\n"); 
   while (getNextPacket(&pktHdr, ethFrame))
     {
-      printf ("%6u )", serialNo++);
+      printf ("   %6u )", serialNo++);
       // Use packetMetaDataPrint() to print the packet header data;
       // Time is printed relative to the 1st packet's time
       // Use packetPrint( ) to print the actual content of the packet starting
