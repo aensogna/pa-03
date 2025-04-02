@@ -34,8 +34,7 @@ main (int argc, char *argv[])
   pcapIn = argv[1];
   pcapOut = argv[2]; 
   arpData = argv[3]; 
-
-  printf ("\nProcessing PCAP file '%s'\n\n", pcapIn);
+  
   // Read the global header of the pcapInput file
   // By calling readPCAPhdr().
   // If error occured, call errorExit("Failed to read global header from the
@@ -45,23 +44,33 @@ main (int argc, char *argv[])
     {
       errorExit ("Failed to read global header from the PCAP file");
     }
+
+  printf ("\nOutput PCAP file created and its global header set up\n\n");
   // Print the global header of the pcap filer
-  printPCAPhdr(&pcapHdr);
+  //printPCAPhdr(&pcapHdr);
+
   // Print labels before any packets are printed
   puts ("");
-  printf ("%6s %14s %11s %-20s %-20s %8s %s\n", "PktNum", "Time Stamp",
-          "OrgLen / Captrd", "Source", "Destination", "Protocol", "info");
+  // printf ("%6s %14s %11s %-20s %-20s %8s %s\n", "PktNum", "Time Stamp",
+  //         "OrgLen / Captrd", "Source", "Destination", "Protocol", "info");
+
+  // Print arp data base
+  printf("Here is the listing of my ARP mapping database\n");
+  readARPmap(arpData); 
+          
   uint32_t serialNo = 1;
-  // Read one packet at a time
+  //Read one packet at a time
+  printf("\n\n    Frame #      Its Destination MAC\n"); 
   while (getNextPacket(&pktHdr, ethFrame))
     {
-      printf ("%6u ", serialNo++);
+      printf ("%6u )", serialNo++);
       // Use packetMetaDataPrint() to print the packet header data;
       // Time is printed relative to the 1st packet's time
       // Use packetPrint( ) to print the actual content of the packet starting
       // at the ethernet level and up
-      printPacketMetaData(&pktHdr);
-      printPacket(frameHdrPtr);
+      // printPacketMetaData(&pktHdr);
+      // printPacket(frameHdrPtr);
+      processRequestPacket(&pktHdr, ethFrame); 
       puts ("");
       memset(ethFrame, 0, MAXFRAMESZ);
     }

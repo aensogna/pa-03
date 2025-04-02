@@ -462,6 +462,7 @@ unsigned printUDPinfo( const udpHdr_t *p )
 /*
 You have just read a packet from the input PCAP file where
 "pktHdr" points at its packet header, and its captured Ethernet frame is in ethFrame[]. 
+
 You shall print the 
   destination MAC of this packet, 
   and whether that address is one of yours. 
@@ -481,7 +482,8 @@ Otherwise:
     The IP flags should indicate "Do Not Fragment"
 */
 void processRequestPacket( packetHdr_t *pktHdr, uint8_t ethFrame[] ){
-
+  etherHdr_t *frameHdrPtr = (etherHdr_t *)ethFrame;
+  
 }
 
 /*
@@ -502,7 +504,40 @@ Returns: the actual number of mappings read from the file
   (setting the global 'mapSize' to that same number), or -1 on failure
 */
 int readARPmap (char *arpDB){
-  return 0; 
+  FILE *file; 
+  char buffer[256]; 
+  char *token; 
+  char *IPtoken; 
+  int counter = 0;  
+  char IPString[MAXIPv4ADDRLEN] = ""; 
+
+  file = fopen(arpDB, "r"); 
+  if (file == NULL){
+    return -1; 
+  }
+
+  while (fgets(buffer, sizeof(buffer), file)) {
+    // IP
+    token = strtok(buffer, "  "); 
+    inet_pton(AF_INET, token, &myARPmap[counter].ip); 
+
+    // MAC
+    token = strtok(NULL, "  "); 
+    strncpy(myARPmap[counter].mac, token, strlen(token) - 1); 
+    
+    inet_ntop(AF_INET, &myARPmap[counter].ip, IPString, MAXIPv4ADDRLEN); 
+    printf("  %d:  %s\t%s\n", counter, IPString, myARPmap[counter].mac); 
+
+    // Increment counter
+    counter++; 
+  }
+
+  mapSize = counter; 
+  //printf("Mapsize: %d\n", mapSize); 
+  fclose(file); 
+
+
+  return mapSize; 
 }
 
 /*
