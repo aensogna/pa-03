@@ -573,32 +573,34 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
 
   printf ("   is mine");
 
-//   if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
-//     != sizeof (packetHdr_t)) // Copy Header
-//   {
-//     errorExit ("Unsuccessful copy of packet header.");
-//   }
-// if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
-//     != pktHdr->incl_len) // Copy data
-//   {
-//     errorExit ("Unsuccessful copy of packet data.");
-//   }
+  //   if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+  //     != sizeof (packetHdr_t)) // Copy Header
+  //   {
+  //     errorExit ("Unsuccessful copy of packet header.");
+  //   }
+  // if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
+  //     != pktHdr->incl_len) // Copy data
+  //   {
+  //     errorExit ("Unsuccessful copy of packet data.");
+  //   }
 
-  if (htons(frPtr->eth_type) == PROTO_ARP)
+  if (htons (frPtr->eth_type) == PROTO_ARP)
     {
       arpMsg_t *arpMsg = (arpMsg_t *)(frPtr + 1);
-      if (htons(arpMsg->arp_oper) == ARPREQUEST)
+      uint8_t * ptr;
+      if (myIP(arpMsg->arp_tpa, &ptr) && htons (arpMsg->arp_oper) == ARPREQUEST)
         {
-          if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
-              != sizeof (packetHdr_t)) // Copy Header
-            {
-              errorExit ("Unsuccessful copy of packet header.");
-            }
-          if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
-              != pktHdr->incl_len) // Copy data
-            {
-              errorExit ("Unsuccessful copy of packet data.");
-            }
+          uint8_t *ptr;
+              if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+                  != sizeof (packetHdr_t)) // Copy Header
+                {
+                  errorExit ("Unsuccessful copy of packet header.");
+                }
+              if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
+                  != pktHdr->incl_len) // Copy data
+                {
+                  errorExit ("Unsuccessful copy of packet data.");
+                }
           // packetHdr_t newPktHdr;
           // newPktHdr.ts_sec = pktHdr->ts_sec;
           // newPktHdr.ts_usec = pktHdr->ts_usec + 30;
@@ -616,10 +618,11 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
         }
     }
 
-  else if (htons(frPtr->eth_type) == PROTO_IPv4)
+  else if (htons (frPtr->eth_type) == PROTO_IPv4)
     {
       ipv4Hdr_t *ipHdr = (ipv4Hdr_t *)(frPtr + 1);
-      if (ipHdr->ip_proto == PROTO_ICMP)
+      uint8_t * ptr;
+      if (myIP(ipHdr->ip_dstIP, &ptr) && ipHdr->ip_proto == PROTO_ICMP)
         {
           unsigned ipHdrLen = (ipHdr->ip_verHlen & 0x0F) * 4;
           void *nextHdr = (void *)((uint8_t *)ipHdr + ipHdrLen);
@@ -750,7 +753,6 @@ bool
 myIP (IPv4addr someIP, uint8_t **ptr)
 {
   char someIpBuf[MAXIPv4ADDRLEN];
-  char currIpBuf[MAXIPv4ADDRLEN];
 
   if (ptr == NULL)
     {
@@ -760,13 +762,14 @@ myIP (IPv4addr someIP, uint8_t **ptr)
   for (int i = 0; i < mapSize; i++)
     {
       char IPString[MAXIPv4ADDRLEN];
+      ipToStr(someIP, someIpBuf);
       inet_ntop (AF_INET, &myARPmap[i].ip, IPString, MAXIPv4ADDRLEN);
 
-      if (strncmp (IPString, currIpBuf, MAXIPv4ADDRLEN) == 0)
+      if (strncmp (IPString, someIpBuf, MAXIPv4ADDRLEN) == 0)
         {
+          printf("true");
           return true;
         }
-      memset (currIpBuf, 0, MAXIPv4ADDRLEN);
     }
   return false;
 }
