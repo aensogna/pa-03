@@ -48,6 +48,7 @@ main (int argc, char *argv[])
   printf ("\nOutput PCAP file created and its global header set up\n\n");
   // Print the global header of the pcap filer
   //printPCAPhdr(&pcapHdr);
+  writePCAPhdr(pcapOut, &pcapHdr);
 
   // Print labels before any packets are printed
   puts ("");

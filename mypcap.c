@@ -24,9 +24,9 @@ int NORMMAGIC = 0xa1b2c3d4;
 int SWAPMAGIC = 0xd4c3b2a1;
 int NANOMAGIC = 0xa1b23c4d;
 
-arpmap_t myARPmap[ MAXARPMAP ] ; // List of my IPs, their MACs
-int mapSize = 0; // Number of mapping pairs read into above array
-FILE *pcapOutput = NULL ;
+arpmap_t myARPmap[MAXARPMAP]; // List of my IPs, their MACs
+int mapSize = 0;              // Number of mapping pairs read into above array
+FILE *pcapOutput = NULL;
 
 /* ***************************** */
 /*          PROJECT 1            */
@@ -289,7 +289,7 @@ printIPinfo (const ipv4Hdr_t *q)
   // Calculate the IP header length in bytes
   // Calculate the IP payload length (total length - header length)
   ipHdrLen = (q->ip_verHlen & 0x0F) * 4;
-  ipPayLen = htons(q->ip_totLen) - ipHdrLen;
+  ipPayLen = htons (q->ip_totLen) - ipHdrLen;
 
   optLen = ipHdrLen - sizeof (ipv4Hdr_t); // The minimup IP header is 20 bytes
   nextHdr = (void *)((uint8_t *)q + ipHdrLen);
@@ -301,7 +301,7 @@ printIPinfo (const ipv4Hdr_t *q)
       printf ("%-8s ", "ICMP");
       // Print IP header length and numBytes of the options
       printf ("IP_HDR{ Len=%d incl. %d options bytes}", ipHdrLen, optLen);
-      unsigned icmpHdrLen = printICMPinfo((icmpHdr_t *)nextHdr);
+      unsigned icmpHdrLen = printICMPinfo ((icmpHdr_t *)nextHdr);
       dataLen = ipPayLen - icmpHdrLen;
       // Print the details of the ICMP message by calling printICMPinfo()
       // Compute 'dataLen' : the length of the data section inside the ICMP
@@ -311,7 +311,7 @@ printIPinfo (const ipv4Hdr_t *q)
       printf ("%-8s ", "TCP");
       // Print IP header length and numBytes of the options
       printf ("IP_HDR{ Len=%d incl. %d options bytes}", ipHdrLen, optLen);
-      unsigned tcpHdrLen = printTCPinfo((tcpHdr_t *)nextHdr);
+      unsigned tcpHdrLen = printTCPinfo ((tcpHdr_t *)nextHdr);
       dataLen = ipPayLen - tcpHdrLen;
       // Leave dataLen as Zero for now
       break;
@@ -319,7 +319,7 @@ printIPinfo (const ipv4Hdr_t *q)
       printf ("%-8s ", "UDP");
       // Print IP header length and numBytes of the options
       printf ("IP_HDR{ Len=%d incl. %d options bytes}", ipHdrLen, optLen);
-      unsigned udpHdrLen = printUDPinfo((udpHdr_t *)nextHdr);
+      unsigned udpHdrLen = printUDPinfo ((udpHdr_t *)nextHdr);
       dataLen = ipPayLen - udpHdrLen;
       // Leave dataLen as Zero for now
       break;
@@ -350,7 +350,8 @@ printICMPinfo (const icmpHdr_t *p)
       // Otherwise printf( "Echo Reply : %19s %3d" , "INVALID Code:" , ....) ;
       if (p->icmp_code == 0)
         {
-          printf ("Echo Reply   :id=%5d, seq=%5d", htons(*id), htons(*seqNum));
+          printf ("Echo Reply   :id=%5d, seq=%5d", htons (*id),
+                  htons (*seqNum));
         }
       else
         {
@@ -364,7 +365,8 @@ printICMPinfo (const icmpHdr_t *p)
       // );
       if (p->icmp_code == 0)
         {
-          printf ("Echo Request :id=%5d, seq=%5d", htons(*id), htons(*seqNum));
+          printf ("Echo Request :id=%5d, seq=%5d", htons (*id),
+                  htons (*seqNum));
         }
       else
         {
@@ -372,86 +374,160 @@ printICMPinfo (const icmpHdr_t *p)
         }
       break;
     default:
-      printf ("Type %3d , code %3d Not Yet Supported", p->icmp_type, p->icmp_code);
+      printf ("Type %3d , code %3d Not Yet Supported", p->icmp_type,
+              p->icmp_code);
     }
   printf ("}");
   return icmpHdrLen;
 }
 
 /*  Project 2  */
-unsigned printTCPinfo( const tcpHdr_t *p )
+unsigned
+printTCPinfo (const tcpHdr_t *p)
 {
   const char *protocol = "tcp";
-  unsigned tcpHdrLen = sizeof(tcpHdr_t);
+  unsigned tcpHdrLen = sizeof (tcpHdr_t);
   struct servent *srcServ, *dstServ;
   char *srcName, *dstName;
   char *ackStr, *pshStr, *rstStr, *synStr, *finStr;
   unsigned hlen, optLen, src, dst, seqNum, ackNum, rwnd;
   bool ack, psh, rst, syn, fin;
 
-  src = htons(p->tcp_srcPort);
-  dst = htons(p->tcp_dstPort);
-  seqNum = htonl(p->tcp_seqNum);
-  ackNum = htonl(p->tcp_ackNum);
-  rwnd = htons(p->tcp_window);
+  src = htons (p->tcp_srcPort);
+  dst = htons (p->tcp_dstPort);
+  seqNum = htonl (p->tcp_seqNum);
+  ackNum = htonl (p->tcp_ackNum);
+  rwnd = htons (p->tcp_window);
 
-  ack = (htons(p->tcp_hlen_reserved_flags) & (1 << 4));
-  if (ack) {ackStr = "ACK ";} else {ackStr = "    ";}
-  psh = (htons(p->tcp_hlen_reserved_flags) & (1 << 3));
-  if (psh) {pshStr = "PSH ";} else {pshStr = "    ";}
-  rst = (htons(p->tcp_hlen_reserved_flags) & (1 << 2));
-  if (rst) {rstStr = "RST ";} else {rstStr = "    ";}
-  syn = (htons(p->tcp_hlen_reserved_flags) & (1 << 1));
-  if (syn) {synStr = "SYN ";} else {synStr = "    ";}
-  fin = (htons(p->tcp_hlen_reserved_flags) & 1);
-  if (fin) {finStr = "FIN ";} else {finStr = "    ";}
+  ack = (htons (p->tcp_hlen_reserved_flags) & (1 << 4));
+  if (ack)
+    {
+      ackStr = "ACK ";
+    }
+  else
+    {
+      ackStr = "    ";
+    }
+  psh = (htons (p->tcp_hlen_reserved_flags) & (1 << 3));
+  if (psh)
+    {
+      pshStr = "PSH ";
+    }
+  else
+    {
+      pshStr = "    ";
+    }
+  rst = (htons (p->tcp_hlen_reserved_flags) & (1 << 2));
+  if (rst)
+    {
+      rstStr = "RST ";
+    }
+  else
+    {
+      rstStr = "    ";
+    }
+  syn = (htons (p->tcp_hlen_reserved_flags) & (1 << 1));
+  if (syn)
+    {
+      synStr = "SYN ";
+    }
+  else
+    {
+      synStr = "    ";
+    }
+  fin = (htons (p->tcp_hlen_reserved_flags) & 1);
+  if (fin)
+    {
+      finStr = "FIN ";
+    }
+  else
+    {
+      finStr = "    ";
+    }
 
-  hlen = ((htons(p->tcp_hlen_reserved_flags) & 0xF000) * 4) >> 12;
-  optLen = hlen - sizeof(tcpHdr_t);
+  hlen = ((htons (p->tcp_hlen_reserved_flags) & 0xF000) * 4) >> 12;
+  optLen = hlen - sizeof (tcpHdr_t);
 
-  printf(" TCPhdr=%2u (Options %2u bytes) ", hlen, optLen);
+  printf (" TCPhdr=%2u (Options %2u bytes) ", hlen, optLen);
 
-  srcServ = getservbyport(ntohs(src), protocol);
-  if (srcServ) { srcName = srcServ->s_name; } else { srcName = "*** "; }
-  printf("Port %5u (%7s) -> ", src, srcName);
+  srcServ = getservbyport (ntohs (src), protocol);
+  if (srcServ)
+    {
+      srcName = srcServ->s_name;
+    }
+  else
+    {
+      srcName = "*** ";
+    }
+  printf ("Port %5u (%7s) -> ", src, srcName);
 
-  dstServ = getservbyport(ntohs(dst), protocol);
-  if (dstServ) { dstName = dstServ->s_name; } else { dstName = "*** "; }
-  printf("%5u (%7s) ", dst, dstName);
+  dstServ = getservbyport (ntohs (dst), protocol);
+  if (dstServ)
+    {
+      dstName = dstServ->s_name;
+    }
+  else
+    {
+      dstName = "*** ";
+    }
+  printf ("%5u (%7s) ", dst, dstName);
 
-  printf("[%s%s%s%s%s] Seq=%10u ", synStr, pshStr, ackStr, finStr, rstStr, seqNum);
-  
-  if (ackNum) { printf("Ack=%10u ", ackNum); } else  {printf("               "); }
-  
-  printf("Rwnd=%5hu", rwnd);
+  printf ("[%s%s%s%s%s] Seq=%10u ", synStr, pshStr, ackStr, finStr, rstStr,
+          seqNum);
+
+  if (ackNum)
+    {
+      printf ("Ack=%10u ", ackNum);
+    }
+  else
+    {
+      printf ("               ");
+    }
+
+  printf ("Rwnd=%5hu", rwnd);
 
   return tcpHdrLen + optLen;
 }
 
-unsigned printUDPinfo( const udpHdr_t *p )
+unsigned
+printUDPinfo (const udpHdr_t *p)
 {
-  unsigned udpHdrLen = sizeof(udpHdr_t);
+  unsigned udpHdrLen = sizeof (udpHdr_t);
   struct servent *srcServ, *dstServ;
   unsigned src, dst, len, cksum;
   const char *protocol = "udp";
   char *srcName, *dstName;
 
-  src = htons(p->udp_srcPort);
-  dst = htons(p->udp_dstPort);
-  len = htons(p->udp_len);
-  cksum = htons(p->udp_cksum);
+  src = htons (p->udp_srcPort);
+  dst = htons (p->udp_dstPort);
+  len = htons (p->udp_len);
+  cksum = htons (p->udp_cksum);
 
-  printf(" UDP %5u Bytes. ", len);
+  printf (" UDP %5u Bytes. ", len);
 
-  srcServ = getservbyport(htons(src), protocol);
-  if (srcServ) { srcName = srcServ->s_name; } else { srcName = "*** "; }
+  srcServ = getservbyport (htons (src), protocol);
+  if (srcServ)
+    {
+      srcName = srcServ->s_name;
+    }
+  else
+    {
+      srcName = "*** ";
+    }
 
-  printf("Port %5u (%7s) -> ", src, srcName);
+  printf ("Port %5u (%7s) -> ", src, srcName);
 
-  dstServ = getservbyport(htons(dst), protocol);
-  if (dstServ) { dstName = dstServ->s_name; } else { dstName = "*** "; }
+  dstServ = getservbyport (htons (dst), protocol);
+  if (dstServ)
+    {
+      dstName = dstServ->s_name;
+    }
+  else
+    {
+      dstName = "*** ";
+    }
 
-  printf("%5u (%7s) ", dst, dstName);
+  printf ("%5u (%7s) ", dst, dstName);
   return udpHdrLen;
 }
 
@@ -461,147 +537,262 @@ unsigned printUDPinfo( const udpHdr_t *p )
 
 /*
 You have just read a packet from the input PCAP file where
-"pktHdr" points at its packet header, and its captured Ethernet frame is in ethFrame[]. 
+"pktHdr" points at its packet header, and its captured Ethernet frame is in
+ethFrame[].
 
-You shall print the 
-  destination MAC of this packet, 
-  and whether that address is one of yours. 
+You shall print the
+  destination MAC of this packet,
+  and whether that address is one of yours.
 
-If this packet destination MAC does NOT target your machine, 
-  Simply return from here. 
+If this packet destination MAC does NOT target your machine,
+  Simply return from here.
   - Do NOT even copy it to the output PCAP file. -
 
-Otherwise: 
-  Respond only to an incoming ARP Request or proper ICMP Echo Request targeting your
-  machine as follows:
-    Copy the request packet (header + Ethernet frame) as is, 
-    followed by your reply packet (header + Ethernet frame) to the output PCAP file.
-  For your ICMP Echo reply packet:
-    the starting IP Identification must be 1000 (in decimal), 
-      then incremented by 1 for successive IP datagrams you generate to the output.
-    The IP flags should indicate "Do Not Fragment"
+Otherwise:
+  Respond only to an incoming ARP Request or proper ICMP Echo Request targeting
+your machine as follows: Copy the request packet (header + Ethernet frame) as
+is, followed by your reply packet (header + Ethernet frame) to the output PCAP
+file. For your ICMP Echo reply packet: the starting IP Identification must be
+1000 (in decimal), then incremented by 1 for successive IP datagrams you
+generate to the output. The IP flags should indicate "Do Not Fragment"
 */
-void processRequestPacket( packetHdr_t *pktHdr, uint8_t ethFrame[] ){
-  uint8_t macBuf[MAXMACADDRLEN]; 
+void
+processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
+{
+  uint8_t macBuf[MAXMACADDRLEN];
 
   const etherHdr_t *frPtr = (const etherHdr_t *)ethFrame;
   macToStr (frPtr->eth_dstMAC, macBuf);
   printf ("      %-21s", macBuf);
 
-  if (myMAC(macBuf)){
-    printf("   is mine"); 
-  } else {
-    printf("   is NOT mine"); 
-  }
-  
+  if (!myMAC (macBuf))
+    {
+      printf ("   is NOT mine");
+      return;
+    }
+
+  printf ("   is mine");
+
+//   if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+//     != sizeof (packetHdr_t)) // Copy Header
+//   {
+//     errorExit ("Unsuccessful copy of packet header.");
+//   }
+// if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
+//     != pktHdr->incl_len) // Copy data
+//   {
+//     errorExit ("Unsuccessful copy of packet data.");
+//   }
+
+  if (htons(frPtr->eth_type) == PROTO_ARP)
+    {
+      arpMsg_t *arpMsg = (arpMsg_t *)(frPtr + 1);
+      if (htons(arpMsg->arp_oper) == ARPREQUEST)
+        {
+          if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+              != sizeof (packetHdr_t)) // Copy Header
+            {
+              errorExit ("Unsuccessful copy of packet header.");
+            }
+          if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
+              != pktHdr->incl_len) // Copy data
+            {
+              errorExit ("Unsuccessful copy of packet data.");
+            }
+          // packetHdr_t newPktHdr;
+          // newPktHdr.ts_sec = pktHdr->ts_sec;
+          // newPktHdr.ts_usec = pktHdr->ts_usec + 30;
+          // newPktHdr.orig_len = pktHdr->orig_len;
+          // newPktHdr.incl_len = pktHdr->incl_len;
+
+          // fwrite(&newPktHdr, sizeof(packetHdr_t), 1, pcapOutput);
+
+          // etherHdr_t newEthHdr;
+          // memcpy(newEthHdr.eth_srcMAC, frPtr->eth_dstMAC, ETHERNETHLEN);
+          // memcpy(newEthHdr.eth_dstMAC, frPtr->eth_srcMAC, ETHERNETHLEN);
+          // newEthHdr.eth_type = PROTO_ARP;
+
+          // fwrite(&newEthHdr, sizeof(etherHdr_t), 1, pcapOutput);
+        }
+    }
+
+  else if (htons(frPtr->eth_type) == PROTO_IPv4)
+    {
+      ipv4Hdr_t *ipHdr = (ipv4Hdr_t *)(frPtr + 1);
+      if (ipHdr->ip_proto == PROTO_ICMP)
+        {
+          unsigned ipHdrLen = (ipHdr->ip_verHlen & 0x0F) * 4;
+          void *nextHdr = (void *)((uint8_t *)ipHdr + ipHdrLen);
+          icmpHdr_t *icmpHdr = (icmpHdr_t *)nextHdr;
+
+          if (icmpHdr->icmp_type == ICMP_ECHO_REQUEST)
+            {
+              if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+                  != sizeof (packetHdr_t)) // Copy Header
+                {
+                  errorExit ("Unsuccessful copy of packet header.");
+                }
+              if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
+                  != pktHdr->incl_len) // Copy data
+                {
+                  errorExit ("Unsuccessful copy of packet data.");
+                }
+            }
+        }
+    }
 }
 
 /*
-Open the output PCAP file ‘fname’ and write its global header 
+Open the output PCAP file ‘fname’ and write its global header
 from pre-filled info in buffer 'p'
 
 Returns: 0 on success, -1 on failure
 */
-int writePCAPhdr ( char *fname, pcap_hdr_t *p){
-  return 0; 
+int
+writePCAPhdr (char *fname, pcap_hdr_t *p)
+{
+  pcapOutput = fopen (fname, "w");
+  if (pcapOutput == NULL)
+    {
+      return -1;
+    }
+  // Do we need to be swapping back the byte order here? it was modified in a
+  // previous call to readPCAPHdr if the magic number was off
+
+  if (fwrite (p, 1, sizeof (pcap_hdr_t), pcapOutput) < sizeof (pcap_hdr_t))
+    {
+      return -1;
+    }
+  // And then we would need to swap them back here ( ? )
+  return 0;
 }
 
 /*
 Read IP-to-MAC mappings from file 'arpDB' into the global array:
   arpmap_t myARPmap[ MAXARPMAP ] ;
 
-Returns: the actual number of mappings read from the file 
+Returns: the actual number of mappings read from the file
   (setting the global 'mapSize' to that same number), or -1 on failure
 */
-int readARPmap (char *arpDB){
-  FILE *file; 
-  char buffer[256]; 
-  char *token; 
-  char *IPtoken; 
-  int counter = 0;  
-  unsigned int values[6]; 
-  char IPString[MAXIPv4ADDRLEN]; 
-  char MACBuff[MAXMACADDRLEN]; 
+int
+readARPmap (char *arpDB)
+{
+  FILE *file;
+  char buffer[256];
+  char *token;
+  char *IPtoken;
+  int counter = 0;
+  unsigned int values[6];
+  char IPString[MAXIPv4ADDRLEN];
+  char MACBuff[MAXMACADDRLEN];
 
-  file = fopen(arpDB, "r"); 
-  if (file == NULL){
-    return -1; 
-  }
-
-  while (fgets(buffer, sizeof(buffer), file)) {
-    // IP
-    token = strtok(buffer, "  "); 
-    inet_pton(AF_INET, token, &myARPmap[counter].ip); 
-
-    // MAC
-    token = strtok(NULL, "\n"); 
-
-    if (!(sscanf(token, "%x:%x:%x:%x:%x:%x", &values[0], &values[1], 
-        &values[2], &values[3], &values[4], &values[5]) == 6)) {
-      
-      return -1; 
+  file = fopen (arpDB, "r");
+  if (file == NULL)
+    {
+      return -1;
     }
-    for (int i = 0; i < ETHERNETHLEN; i++){
-      myARPmap[counter].mac[i] = (uint8_t) values[i]; 
+
+  while (fgets (buffer, sizeof (buffer), file))
+    {
+      // IP
+      token = strtok (buffer, "  ");
+      inet_pton (AF_INET, token, &myARPmap[counter].ip);
+
+      // MAC
+      token = strtok (NULL, "\n");
+
+      if (!(sscanf (token, "%x:%x:%x:%x:%x:%x", &values[0], &values[1],
+                    &values[2], &values[3], &values[4], &values[5])
+            == 6))
+        {
+
+          return -1;
+        }
+      for (int i = 0; i < ETHERNETHLEN; i++)
+        {
+          myARPmap[counter].mac[i] = (uint8_t)values[i];
+        }
+
+      inet_ntop (AF_INET, &myARPmap[counter].ip, IPString, MAXIPv4ADDRLEN);
+
+      macToStr (myARPmap[counter].mac, MACBuff);
+      printf ("  %d:  %s\t%s\n", counter, IPString, MACBuff);
+
+      // Increment counter
+      counter++;
     }
-    
-    inet_ntop(AF_INET, &myARPmap[counter].ip, IPString, MAXIPv4ADDRLEN); 
-    
-    macToStr(myARPmap[counter].mac, MACBuff); 
-    printf("  %d:  %s\t%s\n", counter, IPString, MACBuff); 
 
-    // Increment counter
-    counter++; 
-  }
+  mapSize = counter;
+  // printf("Mapsize: %d\n", mapSize);
+  fclose (file);
 
-  mapSize = counter; 
-  //printf("Mapsize: %d\n", mapSize); 
-  fclose(file); 
-
-
-  return mapSize; 
+  return mapSize;
 }
 
 /*
 Compute and return the Internet Checksum using One-Complement Arithmetic
-on an array of 16-bit values pointed to by 'data', 
+on an array of 16-bit values pointed to by 'data',
 which has a total of ' lenBytes ' bytes (may be an even or odd value)
 */
-uint16_t inet_checksum (void * data, uint16_t lenBytes) {
-  return 0; 
+uint16_t
+inet_checksum (void *data, uint16_t lenBytes)
+{
+  return 0;
 }
 
-
 /*
-Check if 'someIP' is one of mine. If not mine, and if ptr is not NULL, then set *ptr to NULL.
-If 'someIP' is mine, and if ptr is not NULL , then set *ptr to point at the corresponding MAC
-value inside the global 'myARPmap[]' array. Note that no copying of the actual bytes of the MAC
-address is done.
+Check if 'someIP' is one of mine. If not mine, and if ptr is not NULL, then set
+*ptr to NULL. If 'someIP' is mine, and if ptr is not NULL , then set *ptr to
+point at the corresponding MAC value inside the global 'myARPmap[]' array. Note
+that no copying of the actual bytes of the MAC address is done.
 */
-bool myIP (IPv4addr someIP, uint8_t **ptr) {
-  return false; 
+bool
+myIP (IPv4addr someIP, uint8_t **ptr)
+{
+  char someIpBuf[MAXIPv4ADDRLEN];
+  char currIpBuf[MAXIPv4ADDRLEN];
+
+  if (ptr == NULL)
+    {
+      return false;
+    }
+
+  for (int i = 0; i < mapSize; i++)
+    {
+      char IPString[MAXIPv4ADDRLEN];
+      inet_ntop (AF_INET, &myARPmap[i].ip, IPString, MAXIPv4ADDRLEN);
+
+      if (strncmp (IPString, currIpBuf, MAXIPv4ADDRLEN) == 0)
+        {
+          return true;
+        }
+      memset (currIpBuf, 0, MAXIPv4ADDRLEN);
+    }
+  return false;
 }
 
-
 /*
-Check if 'someMAC' is one of mine. 
+Check if 'someMAC' is one of mine.
 Note that a MAC broadcast address must also be treated as mine
 */
-bool myMAC (uint8_t someMAC[]) {
-  char MACBuff[MAXMACADDRLEN]; 
+bool
+myMAC (uint8_t someMAC[])
+{
+  char MACBuff[MAXMACADDRLEN];
 
-  for (int i = 0; i < mapSize; i++){
-    macToStr(myARPmap[i].mac, MACBuff);
-    //printf(" \nTest: \n%s \t %s", someMAC, MACBuff); 
-    if ((strncmp(someMAC, MACBuff, MAXMACADDRLEN) == 0) || (strncmp("ff:ff:ff:ff:ff:ff", someMAC, MAXMACADDRLEN) == 0)){
-      return true; 
-    } 
-    memset(MACBuff, 0, MAXMACADDRLEN); 
-  }
-  return false; 
+  for (int i = 0; i < mapSize; i++)
+    {
+      macToStr (myARPmap[i].mac, MACBuff);
+      // printf(" \nTest: \n%s \t %s", someMAC, MACBuff);
+      if ((strncmp (someMAC, MACBuff, MAXMACADDRLEN) == 0)
+          || (strncmp ("ff:ff:ff:ff:ff:ff", someMAC, MAXMACADDRLEN) == 0))
+        {
+          return true;
+        }
+      memset (MACBuff, 0, MAXMACADDRLEN);
+    }
+  return false;
 }
-
-
 
 /*-------------------------------------------------------------------------*/
 /* Suggested Utility Functions */
@@ -632,4 +823,3 @@ macToStr (const uint8_t *p, char *buf)
             *(p + 2), *(p + 3), *(p + 4), *(p + 5));
   return buf;
 }
-
