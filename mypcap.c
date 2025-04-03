@@ -587,42 +587,80 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
   if (htons (frPtr->eth_type) == PROTO_ARP)
     {
       arpMsg_t *arpMsg = (arpMsg_t *)(frPtr + 1);
-      uint8_t * ptr;
-      if (myIP(arpMsg->arp_tpa, &ptr) && htons (arpMsg->arp_oper) == ARPREQUEST)
+      uint8_t *mac;
+      if (myIP (arpMsg->arp_tpa, &mac)
+          && htons (arpMsg->arp_oper) == ARPREQUEST)
         {
           uint8_t *ptr;
-              if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
-                  != sizeof (packetHdr_t)) // Copy Header
-                {
-                  errorExit ("Unsuccessful copy of packet header.");
-                }
-              if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
-                  != pktHdr->incl_len) // Copy data
-                {
-                  errorExit ("Unsuccessful copy of packet data.");
-                }
-          // packetHdr_t newPktHdr;
-          // newPktHdr.ts_sec = pktHdr->ts_sec;
-          // newPktHdr.ts_usec = pktHdr->ts_usec + 30;
-          // newPktHdr.orig_len = pktHdr->orig_len;
-          // newPktHdr.incl_len = pktHdr->incl_len;
+          if (fwrite (pktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+              != sizeof (packetHdr_t)) // Copy Header
+            {
+              errorExit ("Unsuccessful copy of packet header.");
+            }
+          if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
+              != pktHdr->incl_len) // Copy data
+            {
+              errorExit ("Unsuccessful copy of packet data.");
+            }
 
-          // fwrite(&newPktHdr, sizeof(packetHdr_t), 1, pcapOutput);
+          // Structure to hold packet data
+          uint8_t replyFrame[MAXFRAMESZ + 30000];
+          memset (replyFrame, 0, MAXFRAMESZ + 30000);
+          etherHdr_t *replyPtr = (etherHdr_t *)replyFrame;
 
-          // etherHdr_t newEthHdr;
-          // memcpy(newEthHdr.eth_srcMAC, frPtr->eth_dstMAC, ETHERNETHLEN);
-          // memcpy(newEthHdr.eth_dstMAC, frPtr->eth_srcMAC, ETHERNETHLEN);
-          // newEthHdr.eth_type = PROTO_ARP;
+          // Reply packet header
+          packetHdr_t newPktHdr;
+          newPktHdr.ts_sec = pktHdr->ts_sec;
+          newPktHdr.ts_usec = pktHdr->ts_usec + 30;
+          newPktHdr.orig_len = pktHdr->orig_len;
+          newPktHdr.incl_len = pktHdr->incl_len;
 
-          // fwrite(&newEthHdr, sizeof(etherHdr_t), 1, pcapOutput);
+          // Write the header
+          if (fwrite (&newPktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+              != sizeof (packetHdr_t))
+            {
+              errorExit ("Unsuccessful copy of packet header.");
+            }
+
+          // Make the new ethernet header
+          etherHdr_t newEthHdr;
+          memcpy (newEthHdr.eth_srcMAC, mac, ETHERNETHLEN);
+          memcpy (newEthHdr.eth_dstMAC, frPtr->eth_srcMAC, ETHERNETHLEN);
+          newEthHdr.eth_type = ntohs (PROTO_ARP);
+
+          // Copy into data blob
+          memcpy (replyFrame, &newEthHdr, sizeof (etherHdr_t));
+
+          // Make new arp reply message
+          arpMsg_t newArp;
+          newArp.arp_htype = arpMsg->arp_htype;
+          newArp.arp_ptype = arpMsg->arp_ptype;
+          newArp.arp_hlen = arpMsg->arp_hlen;
+          newArp.arp_plen = arpMsg->arp_plen;
+          newArp.arp_oper = ntohs (ARPREPLY);
+          memcpy (newArp.arp_sha, mac, ETHERNETHLEN);
+          memcpy (newArp.arp_tha, arpMsg->arp_sha, ETHERNETHLEN);
+          newArp.arp_spa = arpMsg->arp_tpa;
+          newArp.arp_tpa = arpMsg->arp_spa;
+
+          // Copy into data blob
+          memcpy (replyFrame + sizeof (etherHdr_t), &newArp,
+                  sizeof (arpMsg_t));
+
+          // Write packet data
+          if (fwrite (replyPtr, 1, newPktHdr.incl_len, pcapOutput)
+              != newPktHdr.incl_len) // Copy data
+            {
+              errorExit ("Unsuccessful copy of packet data.");
+            }
         }
     }
 
   else if (htons (frPtr->eth_type) == PROTO_IPv4)
     {
       ipv4Hdr_t *ipHdr = (ipv4Hdr_t *)(frPtr + 1);
-      uint8_t * ptr;
-      if (myIP(ipHdr->ip_dstIP, &ptr) && ipHdr->ip_proto == PROTO_ICMP)
+      uint8_t *mac;
+      if (myIP (ipHdr->ip_dstIP, &mac) && ipHdr->ip_proto == PROTO_ICMP)
         {
           unsigned ipHdrLen = (ipHdr->ip_verHlen & 0x0F) * 4;
           void *nextHdr = (void *)((uint8_t *)ipHdr + ipHdrLen);
@@ -637,6 +675,50 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
                 }
               if (fwrite (frPtr, 1, pktHdr->incl_len, pcapOutput)
                   != pktHdr->incl_len) // Copy data
+                {
+                  errorExit ("Unsuccessful copy of packet data.");
+                }
+
+              // Structure to hold packet data
+              uint8_t replyFrame[MAXFRAMESZ + 30000];
+              memset (replyFrame, 0, MAXFRAMESZ + 30000);
+              etherHdr_t *replyPtr = (etherHdr_t *)replyFrame;
+
+              // Reply packet header
+              packetHdr_t newPktHdr;
+              newPktHdr.ts_sec = pktHdr->ts_sec;
+              newPktHdr.ts_usec = pktHdr->ts_usec + 30;
+              newPktHdr.orig_len = pktHdr->orig_len;
+              newPktHdr.incl_len = pktHdr->incl_len;
+
+              // Write the header
+              if (fwrite (&newPktHdr, 1, sizeof (packetHdr_t), pcapOutput)
+                  != sizeof (packetHdr_t))
+                {
+                  errorExit ("Unsuccessful copy of packet header.");
+                }
+
+              // Make the new ethernet header
+              etherHdr_t newEthHdr;
+              memcpy (newEthHdr.eth_srcMAC, mac, ETHERNETHLEN);
+              memcpy (newEthHdr.eth_dstMAC, frPtr->eth_srcMAC, ETHERNETHLEN);
+              newEthHdr.eth_type = ntohs (PROTO_ARP);
+
+              // Copy into data blob
+              memcpy (replyFrame, &newEthHdr, sizeof (etherHdr_t));
+
+              // Make new IP header
+              ipv4Hdr_t newIP;
+
+              // Copy into data blob
+
+              // Make ICMP reply message
+              icmpHdr_t newICMP;
+              // Copy into data blob
+
+              // Write packet data
+              if (fwrite (replyPtr, 1, newPktHdr.incl_len, pcapOutput)
+                  != newPktHdr.incl_len) // Copy data
                 {
                   errorExit ("Unsuccessful copy of packet data.");
                 }
@@ -762,12 +844,12 @@ myIP (IPv4addr someIP, uint8_t **ptr)
   for (int i = 0; i < mapSize; i++)
     {
       char IPString[MAXIPv4ADDRLEN];
-      ipToStr(someIP, someIpBuf);
+      ipToStr (someIP, someIpBuf);
       inet_ntop (AF_INET, &myARPmap[i].ip, IPString, MAXIPv4ADDRLEN);
 
       if (strncmp (IPString, someIpBuf, MAXIPv4ADDRLEN) == 0)
         {
-          printf("true");
+          *ptr = myARPmap[i].mac;
           return true;
         }
     }
