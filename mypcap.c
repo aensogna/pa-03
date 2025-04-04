@@ -27,6 +27,7 @@ int NANOMAGIC = 0xa1b23c4d;
 arpmap_t myARPmap[MAXARPMAP]; // List of my IPs, their MACs
 int mapSize = 0;              // Number of mapping pairs read into above array
 FILE *pcapOutput = NULL;
+int ipID = 1000;
 
 /* ***************************** */
 /*          PROJECT 1            */
@@ -663,6 +664,7 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
       if (myIP (ipHdr->ip_dstIP, &mac) && ipHdr->ip_proto == PROTO_ICMP)
         {
           unsigned ipHdrLen = (ipHdr->ip_verHlen & 0x0F) * 4;
+          unsigned ipPayLen = htons(ipHdr->ip_totLen) - ipHdrLen;
           void *nextHdr = (void *)((uint8_t *)ipHdr + ipHdrLen);
           icmpHdr_t *icmpHdr = (icmpHdr_t *)nextHdr;
 
@@ -683,6 +685,7 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
               uint8_t replyFrame[MAXFRAMESZ + 30000];
               memset (replyFrame, 0, MAXFRAMESZ + 30000);
               etherHdr_t *replyPtr = (etherHdr_t *)replyFrame;
+              uint8_t offset = 0;
 
               // Reply packet header
               packetHdr_t newPktHdr;
@@ -702,19 +705,39 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
               etherHdr_t newEthHdr;
               memcpy (newEthHdr.eth_srcMAC, mac, ETHERNETHLEN);
               memcpy (newEthHdr.eth_dstMAC, frPtr->eth_srcMAC, ETHERNETHLEN);
-              newEthHdr.eth_type = ntohs (PROTO_ARP);
+              newEthHdr.eth_type = ntohs (PROTO_IPv4);
 
               // Copy into data blob
               memcpy (replyFrame, &newEthHdr, sizeof (etherHdr_t));
+              offset += sizeof(etherHdr_t);
 
               // Make new IP header
               ipv4Hdr_t newIP;
+              newIP.ip_verHlen = ipHdr->ip_verHlen;
+              newIP.ip_dscpEcn = ipHdr->ip_dscpEcn;
+              newIP.ip_totLen = ipHdr->ip_totLen;
+              newIP.ip_id = ipID++; // starts at 1000 and increases with each reply
+              newIP.ip_flagsFrag = 0x4000; // do not fragment set
+              newIP.ip_ttl = (ipHdr->ip_ttl)-1;
+              newIP.ip_proto = ipHdr->ip_proto;
+              newIP.ip_hdrChk =  0; // inet_checksum(arg, arg) to calculate this
+              newIP.ip_srcIP = ipHdr->ip_dstIP;
+              newIP.ip_dstIP = ipHdr->ip_srcIP;
 
               // Copy into data blob
+              memcpy (replyFrame + offset, &newIP, sizeof(ipv4Hdr_t));
+              offset += sizeof(ipv4Hdr_t);
 
               // Make ICMP reply message
               icmpHdr_t newICMP;
+              newICMP.icmp_type = ICMP_ECHO_REPLY;
+              newICMP.icmp_code = 0;
+              newICMP.icmp_check = 0;
+              memcpy(newICMP.icmp_line2, icmpHdr->icmp_line2, 4);
+              memcpy(newICMP.data, icmpHdr->data, ipPayLen-sizeof(icmpHdr_t));
+
               // Copy into data blob
+              memcpy(replyFrame + offset, &newICMP, ipPayLen);
 
               // Write packet data
               if (fwrite (replyPtr, 1, newPktHdr.incl_len, pcapOutput)
