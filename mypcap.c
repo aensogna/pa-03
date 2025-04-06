@@ -664,7 +664,7 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
       if (myIP (ipHdr->ip_dstIP, &mac) && ipHdr->ip_proto == PROTO_ICMP)
         {
           unsigned ipHdrLen = (ipHdr->ip_verHlen & 0x0F) * 4;
-          unsigned ipPayLen = htons(ipHdr->ip_totLen) - ipHdrLen;
+          unsigned ipPayLen = htons (ipHdr->ip_totLen) - ipHdrLen;
           void *nextHdr = (void *)((uint8_t *)ipHdr + ipHdrLen);
           icmpHdr_t *icmpHdr = (icmpHdr_t *)nextHdr;
 
@@ -709,35 +709,43 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
 
               // Copy into data blob
               memcpy (replyFrame, &newEthHdr, sizeof (etherHdr_t));
-              offset += sizeof(etherHdr_t);
+              offset += sizeof (etherHdr_t);
 
               // Make new IP header
               ipv4Hdr_t newIP;
               newIP.ip_verHlen = ipHdr->ip_verHlen;
               newIP.ip_dscpEcn = ipHdr->ip_dscpEcn;
               newIP.ip_totLen = ipHdr->ip_totLen;
-              newIP.ip_id = ipID++; // starts at 1000 and increases with each reply
-              newIP.ip_flagsFrag = 0x4000; // do not fragment set
-              newIP.ip_ttl = (ipHdr->ip_ttl)-1;
+              newIP.ip_id = ntohs (
+                  ipID++); // starts at 1000 and increases with each reply
+              newIP.ip_flagsFrag = ntohs (0x4000); // do not fragment set
+              newIP.ip_ttl = (ipHdr->ip_ttl);
               newIP.ip_proto = ipHdr->ip_proto;
-              newIP.ip_hdrChk =  0; // inet_checksum(arg, arg) to calculate this
+              newIP.ip_hdrChk = 0; // inet_checksum(arg, arg) to calculate this
               newIP.ip_srcIP = ipHdr->ip_dstIP;
               newIP.ip_dstIP = ipHdr->ip_srcIP;
 
+              // Now lets calc the checksum
+              newIP.ip_hdrChk = inet_checksum (&newIP, sizeof (ipv4Hdr_t));
+
               // Copy into data blob
-              memcpy (replyFrame + offset, &newIP, sizeof(ipv4Hdr_t));
-              offset += sizeof(ipv4Hdr_t);
+              memcpy (replyFrame + offset, &newIP, sizeof (ipv4Hdr_t));
+              offset += sizeof (ipv4Hdr_t);
 
               // Make ICMP reply message
               icmpHdr_t newICMP;
               newICMP.icmp_type = ICMP_ECHO_REPLY;
               newICMP.icmp_code = 0;
               newICMP.icmp_check = 0;
-              memcpy(newICMP.icmp_line2, icmpHdr->icmp_line2, 4);
-              memcpy(newICMP.data, icmpHdr->data, ipPayLen-sizeof(icmpHdr_t));
+              memcpy (newICMP.icmp_line2, icmpHdr->icmp_line2, 4);
+              memcpy (newICMP.data, icmpHdr->data,
+                      ipPayLen - sizeof (icmpHdr_t));
+
+              //cksum
+              newICMP.icmp_check = inet_checksum(&newICMP, ipPayLen);
 
               // Copy into data blob
-              memcpy(replyFrame + offset, &newICMP, ipPayLen);
+              memcpy (replyFrame + offset, &newICMP, ipPayLen);
 
               // Write packet data
               if (fwrite (replyPtr, 1, newPktHdr.incl_len, pcapOutput)
@@ -845,7 +853,26 @@ which has a total of ' lenBytes ' bytes (may be an even or odd value)
 uint16_t
 inet_checksum (void *data, uint16_t lenBytes)
 {
-  return 0;
+  unsigned cksum = 0;
+  uint16_t *dataPtr = data;
+
+  for (int i = 0; i < lenBytes / 2; i++)
+    {
+      cksum += dataPtr[i];
+    }
+
+  //If there's an odd number of bytes, add last byte
+  if (lenBytes % 2 != 0)
+    {
+      cksum += ((uint8_t *)data)[lenBytes - 1];
+    }
+
+  // Add in the carry bit(s)
+  if (cksum > 0xFFFF)
+    {
+      cksum = (cksum & 0xFFFF) + (cksum >> 16);
+    }
+  return (~cksum);
 }
 
 /*
