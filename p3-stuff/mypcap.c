@@ -562,6 +562,8 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
 {
   uint8_t macBuf[MAXMACADDRLEN];
 
+  char temp[MAXMACADDRLEN]; 
+  char temp2[MAXIPv4ADDRLEN]; 
   const etherHdr_t *frPtr = (const etherHdr_t *)ethFrame;
   macToStr (frPtr->eth_dstMAC, macBuf);
   printf ("      %-21s", macBuf);
@@ -703,8 +705,12 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
 
               // Make the new ethernet header
               etherHdr_t newEthHdr;
-              memcpy (newEthHdr.eth_srcMAC, mac, ETHERNETHLEN);
+              memcpy (newEthHdr.eth_srcMAC, frPtr->eth_dstMAC, ETHERNETHLEN);
+              // macToStr(mac, temp); 
+              // printf("\n Src MAC: %s\n", temp);
               memcpy (newEthHdr.eth_dstMAC, frPtr->eth_srcMAC, ETHERNETHLEN);
+              // macToStr(frPtr->eth_srcMAC, temp); 
+              // printf("Dest MAC: %s\n", temp);
               newEthHdr.eth_type = ntohs (PROTO_IPv4);
 
               // Copy into data blob
@@ -724,6 +730,13 @@ processRequestPacket (packetHdr_t *pktHdr, uint8_t ethFrame[])
               newIP.ip_hdrChk = 0; // inet_checksum(arg, arg) to calculate this
               newIP.ip_srcIP = ipHdr->ip_dstIP;
               newIP.ip_dstIP = ipHdr->ip_srcIP;
+
+
+              // ipToStr(newIP.ip_srcIP, temp2); 
+              // printf("Src IP: %s\n", temp2); 
+              // ipToStr(newIP.ip_dstIP, temp2); 
+              // printf("dst IP: %s\n", temp2); 
+              
 
               // Now lets calc the checksum
               newIP.ip_hdrChk = inet_checksum (&newIP, sizeof (ipv4Hdr_t));
@@ -885,6 +898,7 @@ bool
 myIP (IPv4addr someIP, uint8_t **ptr)
 {
   char someIpBuf[MAXIPv4ADDRLEN];
+  char mac[MAXMACADDRLEN]; 
 
   if (ptr == NULL)
     {
@@ -899,6 +913,8 @@ myIP (IPv4addr someIP, uint8_t **ptr)
 
       if (strncmp (IPString, someIpBuf, MAXIPv4ADDRLEN) == 0)
         {
+          //macToStr(myARPmap[i].mac, mac); 
+          //printf("\n MYIP Function: IP: %s    MAC: %s\n", someIpBuf, mac); 
           *ptr = myARPmap[i].mac;
           return true;
         }
