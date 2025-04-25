@@ -22,7 +22,7 @@ int main( int argc , char *argv[] )
 {
     int sd, sd_audit ;
     
-    char *developerName = "MUST WRITE YOUR NAMES HERE (OR LOSE BIG POINTS)" ;
+    char *developerName = "Abigail Ensogna and Elvis Masinovic" ;
     
     printf( "\n****  sub-Mirror Server **** by %s\n\n" , developerName ) ;
 
