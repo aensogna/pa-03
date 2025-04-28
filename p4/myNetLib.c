@@ -11,6 +11,7 @@
 
 #include    "myNetLib.h"
 #define     MAXSTRLEN 256
+#define _XOPEN_SOURCE 700 // for sigaction? 
 
 //------------------------------------------------------------
 // To be called after a function that sets errno 
