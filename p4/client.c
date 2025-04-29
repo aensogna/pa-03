@@ -4,7 +4,7 @@
     FILE:   client.c   SKELETON
 
     Written By: 
-		1- Write Student Name Here	
+		1- Abigail Ensogna and Elvis Masinovic	
 		 
     Submitted on:   <PUT DATE  HERE >
 **********************************************************************/
@@ -23,7 +23,7 @@ int main( int argc , char *argv[] )
          *auditorIP = AUDITOR_IP ,                  // Default Auditor Server
          *inFile    = "GoldilockAnd3Bears.txt" ;    // Default input file
 
-    printf( "\nClient by <YOUR_FULL_NAMES> has Started\n" );
+    printf( "\nClient by Abigail Ensogna and Elvis Masinovic has Started\n" );
 
     // Get the command-line arguments
 
@@ -48,21 +48,26 @@ int main( int argc , char *argv[] )
     int  fd_in , fd_cpy ;
 
     // Open the input file and create the copy file by same name.copy
+    fd_in = fopen(inFile, "r");
+    char cpy_name [strnlen(inFile)+strnlen(".copy")+1];
+    strncpy(cpy_name, inFile, strnlen(inFile));
+    strncpy(cpy_name + strnlen(inFile), ".copy", sizeof(cpy_name)-strnlen(inFile));
+    fd_cpy =  fopen(cpy_name, "w");
 
     // Use sockettCP() to create a local TCP socket with ephemeral port, and connect it to
     // the mirror server at  mirrorIP : MIRROR_TCP_PORT
 
     puts("") ;
-    sd_mirror = socketTCP( /* ... */  );
+    sd_mirror = socketTCP(3333, MIRROR_IP, MIRROR_TCP_PORT); // second Arg? 
     printf("TCP Client is now connected to the TCP Mirror server %s : %hu\n" , 
-            ..... ) ;
+            MIRROR_IP, MIRROR_TCP_PORT) ;
 
     { 
         // This block to be implemented in Phase Two
     
         // Use socketUDP to created an ephemeral local UDP socket and restrict 
         // its peer to the Auditor server
-        sd_audit = socketUDP( /* .... */ ) ;
+        //sd_audit = socketUDP( /* .... */ ) ;
     
     }
 
@@ -95,8 +100,17 @@ void mirrorFile( int in , int mirror , int copy , int audit )
     audit_t  activity ; // This is for Phase Two
     struct sockaddr_in      mySocket, mirrorServer ;
     int    alen ;
+
+    alen = sizeof(mirrorServer);
     
     // Learn my IP:Port associated with 'mirror' 
+    if (getsockname(mirror,  (SA *)&mirrorServer, &alen) < 0) {
+        err_quit("getsockname err");
+    }
+
+    if (! inet_ntop(AF_INET, &mirrorServer.sin_addr, str, MAXSTRLEN)) {
+        err_quit("inet_ntop err");
+    }
         
     // Learn the IP:Port of my peer on the other side of 'mirror'     
         
