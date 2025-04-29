@@ -99,7 +99,7 @@ main (int argc, char *argv[])
 
       // Delegate a sub-server child process to handle this client
       // Start a subMirror server using one of the 'exec' family of system
-      pid_t pid = fork();
+      pid_t pid = Fork();
       execl("subMirror", sd_clnt, sd_audit);
       // calls Pass the 'sd_clnt'  and  'sd_audit' to that subServer
 
