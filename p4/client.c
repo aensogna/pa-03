@@ -101,9 +101,8 @@ void mirrorFile( int in , int mirror , int copy , int audit )
     struct sockaddr_in      mySocket, mirrorServer ;
     int    alen ;
 
-    alen = sizeof(mirrorServer);
-    
-    // Learn my IP:Port associated with 'mirror' 
+    // Learn my IP:Port associated with 'mirror'
+    alen = sizeof(mirrorServer); 
     if (getsockname(mirror,  (SA *)&mirrorServer, &alen) < 0) {
         err_quit("getsockname err");
     }
@@ -111,8 +110,19 @@ void mirrorFile( int in , int mirror , int copy , int audit )
     if (! inet_ntop(AF_INET, &mirrorServer.sin_addr, str, MAXSTRLEN)) {
         err_quit("inet_ntop err");
     }
+
+    // Do we need to be printing here
+    memset(str, 0, MAXSTRLEN);
         
-    // Learn the IP:Port of my peer on the other side of 'mirror'     
+    // Learn the IP:Port of my peer on the other side of 'mirror'
+    if (getpeername(mirror, (SA *)&mySocket, &alen) < 0) {
+        err_quit("getpeername err");
+    }
+
+    if (! inet_ntop(AF_INET, (void *) &mySocket.sin_addr, str, MAXSTRLEN)) {
+        err_quit("inet ntop peer error");
+    }
+
         
     // Repeat untill all data has been sent and received back
     // As this happens, save the received copy to the 'copy' file descriptor
@@ -120,7 +130,8 @@ void mirrorFile( int in , int mirror , int copy , int audit )
     {
         // Get up to CHUNK_SZ bytes from input file  and send ALL of what I get
         // to the 'mirror' socket
-
+        ssize_t numRead = Read(in, buf, CHUNK_SZ);
+        write(mirror, buf, numRead);
 
         { 
             // This block to be implemented in Phase Two
@@ -131,6 +142,7 @@ void mirrorFile( int in , int mirror , int copy , int audit )
         }
        
         // Now read from 'mirror' EXACTLY the same number of bytes I sent earlier
+        Readn(mirror, buf2, numRead);
 
         { 
             // This block to be implemented in Phase Two
@@ -141,6 +153,7 @@ void mirrorFile( int in , int mirror , int copy , int audit )
         }
         
         // Finally, save a copy of what I received back to the 'copy' file
+        write(copy, buf2, numRead);
         
     }
     
