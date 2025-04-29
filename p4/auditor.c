@@ -69,18 +69,18 @@ int main( int argc , char *argv[] )
         // Wait for data to arrive at the UDP socket & capture the Client's socket address
         // The expected data is an 'audit_t' object
         alen        = sizeof( cl_addr ) ;
-        if ( recvfrom( sd_audit, /* ....   */  ) < 0 )
+        if ( recvfrom( sd_audit, buff, REPO_SZ, 0, (SA *) &cl_addr, &alen ) < 0 )
             err_sys( "recvfrom" ) ;
 
         // Print the details of this activity, both to the stdout and to the log file
-        inet_ntop( AF_INET , /* Sender's IP address ++>> ipStr  */ ) ;
-        inet_ntop( AF_INET , /* IP address of the target of this activity ==>> ipStr2 */ ) ;
+        inet_ntop( AF_INET , (void *) & cl_addr.sin_addr.s_addr , ipStr, 30/* Sender's IP address ++>> ipStr  */ ) ;
+        inet_ntop( AF_INET , (void *) & cl_addr.sin_addr.s_addr , ipStr2, 30/* IP address of the target of this activity ==>> ipStr2 */ ) ;
 
         snprintf( buff , REPO_SZ , "Activity By %-17s:%hu   ..."
                                    "  %9s  %8d Bytes. Peer's IP: %s" ,
-                                   ipStr , /* Sender's port number */ , 
-                                   /* Type of activity "Sent" or  "Received"  */ , 
-                                   /* number of bytes in activity */ , ipStr2 
+                                   ipStr , ntohs(cl_addr.sin_port) , 
+                                   activity.op/* Type of activity "Sent" or  "Received"  */ , 
+                                   activity.nBytes/* number of bytes in activity */ , ipStr2 
                 ) ;
         
         printf( "\n### %s\n" , buff );
