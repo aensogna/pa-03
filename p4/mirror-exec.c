@@ -11,9 +11,6 @@
 
 #include "myNetLib.h"
 
-#define SIGCHILD_NO 17
-#define SIGKILL_NO 9
-
 void reaper (int sig);      // Handle SIGCHLD
 void killHandler (int sig); // Handle SIGTERM
 
@@ -60,14 +57,14 @@ main (int argc, char *argv[])
 
     // Create a UDP socket with ephemeral port, but 'connected' to the Auditor
     // server
-    //sd_audit = socketUDP (/*  ....  */);
+    // sd_audit = socketUDP (/*  ....  */);
   }
 
   /* Let reaper clean up after completed child processes */
-  sigactionWrapper (SIGCHILD_NO, &reaper);
+  sigactionWrapper (SIGCHLD, &reaper);
 
   /* Let killHandler() handle CTRL-C or a KILL command from terminal*/
-  sigactionWrapper (SIGKILL_NO, &killHandler);
+  sigactionWrapper (SIGKILL, &killHandler);
 
   // For ever, wait till clients connect to me
   // Will only terminate when I receive a 'SIGTERM'
@@ -77,38 +74,51 @@ main (int argc, char *argv[])
       int sd_clnt;
 
       // Wait for a client to connect & record the 'accepted' socket in sd_clnt
-      sd_clnt = Accept (sd_listen, (struct sockaddr *)&cl_addr, (socklen_t *)&clAddrLen);
+      sd_clnt = Accept (sd_listen, (struct sockaddr *)&cl_addr,
+                        (socklen_t *)&clAddrLen);
 
       struct sockaddr_in clientSocket;
-      unsigned int cliSockLen = sizeof(clientSocket);
+      unsigned int cliSockLen = sizeof (clientSocket);
       char ipStr[20];
 
-      if (getpeername (sd_clnt, (struct sockaddr *)&clientSocket, (socklen_t *)&cliSockLen) != 0)
+      if (getpeername (sd_clnt, (struct sockaddr *)&clientSocket,
+                       (socklen_t *)&cliSockLen)
+          != 0)
         {
           err_quit ("getpeername error");
         }
 
       if (inet_ntop (AF_INET, (void *)&clientSocket.sin_addr, ipStr,
-                     sizeof (clientSocket)) == NULL)
+                     sizeof (clientSocket))
+          == NULL)
         {
           err_quit ("inet ntop error");
         }
 
       // Display IP : Port of the client
-      printf ("%s : %hu\n", ipStr, ntohs(clientSocket.sin_port));
+      printf ("%s : %hu\n", ipStr, ntohs (clientSocket.sin_port));
 
       // Delegate a sub-server child process to handle this client
       // Start a subMirror server using one of the 'exec' family of system
-      pid_t pid = Fork();
-      char sd_clnt_str[50];
-      memset(sd_clnt_str, 0 , sizeof(sd_clnt_str));
-      char sd_audit_str[50];
-      memset(sd_audit_str, 0 , sizeof(sd_audit_str));
-      execl("subMirror", sd_clnt_str, sd_audit_str, NULL);
+      pid_t pid = Fork ();
+      if (pid == -1) {
+        err_quit("fork error");
+      }
+      if (pid == 0)
+        {
+          char sd_clnt_str[50];
+          memset (sd_clnt_str, 0, sizeof (sd_clnt_str));
+          char sd_audit_str[50];
+          memset (sd_audit_str, 0, sizeof (sd_audit_str));
+          execl ("subMirror", sd_clnt_str, sd_audit_str, NULL);
+        }
       // calls Pass the 'sd_clnt'  and  'sd_audit' to that subServer
 
       // As for the parent server, make sure you close sockets you don't need
-      Close(sd_clnt);
+      if (pid != 0)
+        {
+          Close (sd_clnt);
+        }
     }
 
   return 0;
@@ -128,7 +138,7 @@ reaper (int sig)
   // Don't know how many signals, so loop till there are still
   // more signals from child processes
 
-  while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+  while ((pid = waitpid (-1, &status, WNOHANG)) > 0)
     fprintf (stderr, "\nA Child server process %d has terminated\n", pid);
 
   return;

@@ -40,7 +40,7 @@ int main( int argc , char *argv[] )
     char                buff[REPO_SZ] , 
                        *outFile = "activityLog.txt";
 
-    char *developerName = "MUST  WRITE  YOUR  NAMES  HERE  OR  LOSE  BIG  POINTS" ;
+    char *developerName = "Abigail Ensogna and Elvis Masinovic" ;
     
     printf( "\n****  Auditor Server **** by %s\n\n" , developerName ) ;
 
@@ -55,7 +55,7 @@ int main( int argc , char *argv[] )
     sd_audit = socketUDP( AUDITOR_UDP_PORT , NULL , 0 ) ;
 
     // Gracefully clean-up when receiving the SIGTERM signal
-    sigactionWrapper( /* ....  */ ) ; 
+    sigactionWrapper(SIGTERM, &killHandler) ; 
 
     snprintf( buff , REPO_SZ , "****  Auditor Server **** by %s has started\n" , developerName);
     printf( "\n### %s" , buff );
