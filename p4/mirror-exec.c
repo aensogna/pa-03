@@ -4,7 +4,7 @@
     FILE:   mirror-exec.c   SKELETON
 
     Written By:
-                1- Write Student Name Here
+                Abigail Ensogna and Elvis Masinovic
 
     Submitted on:   <PUT DATE  HERE >
 **********************************************************************/
@@ -60,7 +60,7 @@ main (int argc, char *argv[])
 
     // Create a UDP socket with ephemeral port, but 'connected' to the Auditor
     // server
-    sd_audit = socketUDP (/*  ....  */);
+    //sd_audit = socketUDP (/*  ....  */);
   }
 
   /* Let reaper clean up after completed child processes */
@@ -99,9 +99,16 @@ main (int argc, char *argv[])
 
       // Delegate a sub-server child process to handle this client
       // Start a subMirror server using one of the 'exec' family of system
+      pid_t pid = Fork();
+      char sd_clnt_str[50];
+      memset(sd_clnt_str, 0 , sizeof(sd_clnt_str));
+      char sd_audit_str[50];
+      memset(sd_audit_str, 0 , sizeof(sd_audit_str));
+      execl("subMirror", sd_clnt_str, sd_audit_str, NULL);
       // calls Pass the 'sd_clnt'  and  'sd_audit' to that subServer
 
       // As for the parent server, make sure you close sockets you don't need
+      Close(sd_clnt);
     }
 
   return 0;
@@ -121,7 +128,7 @@ reaper (int sig)
   // Don't know how many signals, so loop till there are still
   // more signals from child processes
 
-  while (....)
+  while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
     fprintf (stderr, "\nA Child server process %d has terminated\n", pid);
 
   return;

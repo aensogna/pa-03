@@ -4,12 +4,14 @@
     FILE:   subMirror.c   SKELETON 
 
     Written By: 
-		1- Write Student Name Here	
+		1- Abigail Ensogna and Elvis Masinovic
 		 
     Submitted on:   <PUT DATE  HERE >
 **********************************************************************/
 
 #include    "myNetLib.h"
+#define MAXSTRLEN 256
+#define CHUNK_SZ  1000
 
 /*------------------------------------------------------------------------
  * This is a child server attending to an incoming client on 'sd'
@@ -21,6 +23,11 @@
 int main( int argc , char *argv[] )
 {
     int sd, sd_audit ;
+    char ipStr[MAXSTRLEN];
+    char chunk[CHUNK_SZ];
+
+    int alen;
+    struct sockaddr_in clntaddr;
     
     char *developerName = "Abigail Ensogna and Elvis Masinovic" ;
     
@@ -30,8 +37,9 @@ int main( int argc , char *argv[] )
     // Get the required  socket descriptors of the Client
     // and of the Auditor from the command line arguments
 
-    sd        = /* .... */ ;  // client connected TCP socket
-    sd_audit  = /* .... */ ;  // Auditor UDP socket
+    sd        = atoi(argv[1]) ;  // client connected TCP socket
+    //sd_audit  = /* .... */ ;  // Auditor UDP socket
+    //Confused what to do with this 
 
     { 
         // This block to be implemented in Phase Two
@@ -43,14 +51,19 @@ int main( int argc , char *argv[] )
     
     // find out my IP:Port of the client from 
     // the provided socket descriptors
-        
+    alen = sizeof(clntaddr);
 
+    if( getsockname(sd , (SA *) &clntaddr, &alen ) < 0 )
+        err_quit("getsockname error");
+
+    if ( ! inet_ntop( AF_INET, &clntaddr.sin_addr, ipStr, MAXSTRLEN ) ) 
+        err_quit("inet_ntop error");
       
     while ( 1 )   // Loop until client closes socket
     {
         // Get a chunk of data from the client. Wisely choose which 
         // variant of the read() wrappers to use here
-
+        ssize_t numRead = Read(sd, chunk, CHUNK_SZ);
 
         { 
             // This block to be implemented in Phase Two
@@ -60,6 +73,7 @@ int main( int argc , char *argv[] )
         
 
         // send all bytes received above back to the client
+        write(sd, chunk, numRead);
 
 
         { 
@@ -67,6 +81,7 @@ int main( int argc , char *argv[] )
         
             // Report this send activity to the Auditor
         }
+        memset(chunk, 0, CHUNK_SZ);
     }
 
     Close ( sd ) ;
