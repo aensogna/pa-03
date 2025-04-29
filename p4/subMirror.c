@@ -36,11 +36,11 @@ int main( int argc , char *argv[] )
         
     // Get the required  socket descriptors of the Client
     // and of the Auditor from the command line arguments
-
     sd        = atoi(argv[1]) ;  // client connected TCP socket
-    //sd_audit  = /* .... */ ;  // Auditor UDP socket
-    //Confused what to do with this 
+    sd_audit  = atoi(argv[2]);  // Auditor UDP socket
 
+    // what is the difference between what the top is supposed to
+    // do vs what this block below is supposed to do
     { 
         // This block to be implemented in Phase Two
     
