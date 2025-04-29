@@ -100,7 +100,11 @@ main (int argc, char *argv[])
       // Delegate a sub-server child process to handle this client
       // Start a subMirror server using one of the 'exec' family of system
       pid_t pid = Fork();
-      execl("subMirror", sd_clnt, sd_audit);
+      char sd_clnt_str[50];
+      memset(sd_clnt_str, 0 , sizeof(sd_clnt_str));
+      char sd_audit_str[50];
+      memset(sd_audit_str, 0 , sizeof(sd_audit_str));
+      execl("subMirror", sd_clnt_str, sd_audit_str, NULL);
       // calls Pass the 'sd_clnt'  and  'sd_audit' to that subServer
 
       // As for the parent server, make sure you close sockets you don't need

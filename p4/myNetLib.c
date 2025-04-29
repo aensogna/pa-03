@@ -4,12 +4,13 @@
     FILE:   myNetLib.c   SKELETON
 
         Code completed by:
-                1- Write Student Name Here
+                Abigail Ensogna and Elvis Masinovic
 
     Submitted on:   <PUT DATE  HERE >
 **********************************************************************/
 
 #include "myNetLib.h"
+
 #define MAXSTRLEN 256
 #define _XOPEN_SOURCE 700 // for sigaction?
 

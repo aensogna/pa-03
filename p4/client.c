@@ -48,11 +48,11 @@ int main( int argc , char *argv[] )
     int  fd_in , fd_cpy ;
 
     // Open the input file and create the copy file by same name.copy
-    fd_in = fopen(inFile, "r");
-    char cpy_name [strnlen(inFile)+strnlen(".copy")+1];
-    strncpy(cpy_name, inFile, strnlen(inFile));
-    strncpy(cpy_name + strnlen(inFile), ".copy", sizeof(cpy_name)-strnlen(inFile));
-    fd_cpy =  fopen(cpy_name, "w");
+    fd_in = open(inFile, O_RDONLY);
+    char cpy_name [strlen(inFile)+strlen(".copy")+1];
+    strncpy(cpy_name, inFile, strlen(inFile));
+    strncpy(cpy_name + strlen(inFile), ".copy", sizeof(cpy_name)-strlen(inFile));
+    fd_cpy =  open(cpy_name, O_CREAT, O_WRONLY);
 
     // Use sockettCP() to create a local TCP socket with ephemeral port, and connect it to
     // the mirror server at  mirrorIP : MIRROR_TCP_PORT
@@ -131,7 +131,7 @@ void mirrorFile( int in , int mirror , int copy , int audit )
         // Get up to CHUNK_SZ bytes from input file  and send ALL of what I get
         // to the 'mirror' socket
         ssize_t numRead = Read(in, buf, CHUNK_SZ);
-        write(mirror, buf, numRead);
+        writen(mirror, buf, numRead);
 
         { 
             // This block to be implemented in Phase Two
@@ -153,7 +153,7 @@ void mirrorFile( int in , int mirror , int copy , int audit )
         }
         
         // Finally, save a copy of what I received back to the 'copy' file
-        write(copy, buf2, numRead);
+        writen(copy, buf2, numRead);
 
         memset(buf, 0, CHUNK_SZ);
         memset(buf2, 0, CHUNK_SZ);
