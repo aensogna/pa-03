@@ -154,6 +154,9 @@ void mirrorFile( int in , int mirror , int copy , int audit )
         
         // Finally, save a copy of what I received back to the 'copy' file
         write(copy, buf2, numRead);
+
+        memset(buf, 0, CHUNK_SZ);
+        memset(buf2, 0, CHUNK_SZ);
         
     }
     

@@ -81,6 +81,7 @@ int main( int argc , char *argv[] )
         
             // Report this send activity to the Auditor
         }
+        memset(chunk, 0, CHUNK_SZ);
     }
 
     Close ( sd ) ;
