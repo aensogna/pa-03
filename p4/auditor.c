@@ -74,7 +74,7 @@ int main( int argc , char *argv[] )
 
         // Print the details of this activity, both to the stdout and to the log file
         inet_ntop( AF_INET , (void *) & cl_addr.sin_addr.s_addr , ipStr, 30/* Sender's IP address ++>> ipStr  */ ) ;
-        inet_ntop( AF_INET , (void *) & cl_addr.sin_addr.s_addr , ipStr2, 30/* IP address of the target of this activity ==>> ipStr2 */ ) ;
+        inet_ntop( AF_INET , (void *) & activity.ip , ipStr2, 30/* IP address of the target of this activity ==>> ipStr2 */ ) ;
 
         snprintf( buff , REPO_SZ , "Activity By %-17s:%hu   ..."
                                    "  %9s  %8d Bytes. Peer's IP: %s" ,

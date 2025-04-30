@@ -111,6 +111,7 @@ main (int argc, char *argv[])
           // memset (sd_clnt_str, 0, sizeof (sd_clnt_str));
           // char sd_audit_str[50];
           // memset (sd_audit_str, 0, sizeof (sd_audit_str));
+          Close(sd_listen); 
           execl ("subMirror", sd_clnt, sd_audit, NULL);
         }
       // calls Pass the 'sd_clnt'  and  'sd_audit' to that subServer
