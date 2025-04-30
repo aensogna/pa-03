@@ -45,20 +45,20 @@ main (int argc, char *argv[])
   printf ("\tAuditor Server IP is '%s'\n", auditorIP);
 
   // Create a TCP socket bound to this local port MIRROR_TCP_PORT
-  sd_listen = socketTCP (MIRROR_TCP_PORT, NULL, 0);
+  sd_listen = socketTCP (MIRROR_TCP_PORT, MIRROR_IP, 0);
 
   // Now, start listening on this TCP port
   Listen (sd_listen, queLen);
 
   printf ("Mirror Server Started. Listening at socket %hu\n", sd_listen);
 
-  {
-    // This block to be implemented in Phase Two
+  
+  // This block to be implemented in Phase Two
 
-    // Create a UDP socket with ephemeral port, but 'connected' to the Auditor
-    // server
-    // sd_audit = socketUDP (/*  ....  */);
-  }
+  // Create a UDP socket with ephemeral port, but 'connected' to the Auditor
+  // server
+  sd_audit = socketUDP (4444, AUDITOR_IP, AUDITOR_UDP_PORT);
+  
 
   /* Let reaper clean up after completed child processes */
   sigactionWrapper (SIGCHLD, &reaper);

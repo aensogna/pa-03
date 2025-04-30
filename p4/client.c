@@ -65,7 +65,7 @@ main (int argc, char *argv[])
   // connect it to the mirror server at  mirrorIP : MIRROR_TCP_PORT
 
   puts ("");
-  sd_mirror = socketTCP (3333, MIRROR_IP, MIRROR_TCP_PORT); // second Arg?
+  sd_mirror = socketTCP (55555, MIRROR_IP, MIRROR_TCP_PORT); // second Arg?
   printf ("TCP Client is now connected to the TCP Mirror server %s : %hu\n",
           MIRROR_IP, MIRROR_TCP_PORT);
 
@@ -74,7 +74,7 @@ main (int argc, char *argv[])
 
     // Use socketUDP to created an ephemeral local UDP socket and restrict
     // its peer to the Auditor server
-    sd_audit = socketUDP (4444, AUDITOR_IP, AUDITOR_UDP_PORT);
+    sd_audit = socketUDP (55556, AUDITOR_IP, AUDITOR_UDP_PORT);
   }
 
   // Now, Start moving data: fd_in ==> sd_mirror ==> fd_cpy
@@ -152,7 +152,7 @@ mirrorFile (int in, int mirror, int copy, int audit)
       activity.op = 1;
       activity.nBytes = numRead;
       activity.ip = mySocket.sin_addr.s_addr;
-      // sendto(....)
+      sendto(mirror, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
 
       // Now read from 'mirror' EXACTLY the same number of bytes I sent earlier
       Readn (mirror, buf2, numRead);
@@ -164,7 +164,7 @@ mirrorFile (int in, int mirror, int copy, int audit)
       activity.op = 2;
       activity.nBytes = numRead;
       activity.ip = mySocket.sin_addr.s_addr;
-      // sendto(....)
+      sendto(mirror, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
 
       // Finally, save a copy of what I received back to the 'copy' file
       writen (copy, buf2, numRead);
