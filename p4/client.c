@@ -55,12 +55,12 @@ main (int argc, char *argv[])
 
   // Open the input file and create the copy file by same name.copy
   fd_in = open (inFile, O_RDONLY);
-  printf("in file: %d\n", fd_in);
+  //printf("in file: %d\n", fd_in);
   char cpy_name[50];
   snprintf(cpy_name, sizeof(cpy_name), "%s.copy", inFile);
-  printf("%s\n", cpy_name);
+  //printf("%s\n", cpy_name);
   fd_cpy = open (cpy_name, O_CREAT | O_WRONLY | O_TRUNC, 0777);
-  printf("fd cp %d", fd_cpy);
+  //printf("fd cp %d", fd_cpy);
 
   // Use sockettCP() to create a local TCP socket with ephemeral port, and
   // connect it to the mirror server at  mirrorIP : MIRROR_TCP_PORT
@@ -145,6 +145,9 @@ mirrorFile (int in, int mirror, int copy, int audit)
       // to the 'mirror' socket
       ssize_t numRead = Read (in, buf, CHUNK_SZ);
       printf("bytes read: %ld\n", numRead);
+      if (numRead == 0){
+        break; 
+      }
       ssize_t numWrite = writen (mirror, buf, numRead);
       printf("send to mirror : %ld\n", numWrite);
       // This block to be implemented in Phase Two
@@ -154,7 +157,9 @@ mirrorFile (int in, int mirror, int copy, int audit)
       activity.op = 1;
       activity.nBytes = numRead;
       activity.ip = mySocket.sin_addr.s_addr;
-      sendto(audit, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
+      //sendto(audit, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
+      writen(audit, &activity, sizeof(activity)); 
+
       puts("finished sending to auditor\n");
 
       // Now read from 'mirror' EXACTLY the same number of bytes I sent earlier
@@ -167,8 +172,8 @@ mirrorFile (int in, int mirror, int copy, int audit)
       activity.op = 2;
       activity.nBytes = numRead;
       activity.ip = mySocket.sin_addr.s_addr;
-      sendto(audit, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
-
+      //sendto(audit, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
+      writen(audit, &activity, sizeof(activity)); 
       // Finally, save a copy of what I received back to the 'copy' file
       writen (copy, buf2, numRead);
 

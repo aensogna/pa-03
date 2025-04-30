@@ -68,6 +68,7 @@ main (int argc, char *argv[])
       activity.nBytes = numRead;
       activity.ip = clntaddr.sin_addr.s_addr;
       // sendto(....)
+      writen(sd_audit, &activity, sizeof(activity)); 
 
       // send all bytes received above back to the client
       write (sd, chunk, numRead);
@@ -79,6 +80,7 @@ main (int argc, char *argv[])
       activity.nBytes = numRead;
       activity.ip = clntaddr.sin_addr.s_addr;
       //sendto(....);
+      writen(sd_audit, &activity, sizeof(activity)); 
 
       memset (chunk, 0, CHUNK_SZ);
     }
