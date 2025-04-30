@@ -76,10 +76,11 @@ int main( int argc , char *argv[] )
         inet_ntop( AF_INET , (void *) & cl_addr.sin_addr.s_addr , ipStr, 30/* Sender's IP address ++>> ipStr  */ ) ;
         inet_ntop( AF_INET , (void *) & activity.ip , ipStr2, 30/* IP address of the target of this activity ==>> ipStr2 */ ) ;
 
+        // Don't quite know what is inside activity so we might need to change the if statment for print
         snprintf( buff , REPO_SZ , "Activity By %-17s:%hu   ..."
                                    "  %9s  %8d Bytes. Peer's IP: %s" ,
                                    ipStr , ntohs(cl_addr.sin_port) , 
-                                   activity.op/* Type of activity "Sent" or  "Received"  */ , 
+                                   activity.op == 0 ? "Received" : "Sent" /* Type of activity "Sent" or  "Received"  */ , 
                                    activity.nBytes/* number of bytes in activity */ , ipStr2 
                 ) ;
         

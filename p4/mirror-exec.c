@@ -107,12 +107,15 @@ main (int argc, char *argv[])
       else if (pid == 0)
         {
           // Child
-          // char sd_clnt_str[50];
-          // memset (sd_clnt_str, 0, sizeof (sd_clnt_str));
-          // char sd_audit_str[50];
-          // memset (sd_audit_str, 0, sizeof (sd_audit_str));
-          Close(sd_listen); 
-          execl ("subMirror", sd_clnt, sd_audit, NULL);
+          char sd_clnt_str[sizeof(sd_clnt)];
+          memset (sd_clnt_str, 0, sizeof (sd_clnt_str));
+          char sd_audit_str[sizeof(sd_audit)];
+          memset (sd_audit_str, 0, sizeof (sd_audit_str));
+
+          snprintf(sd_clnt_str, sizeof(sd_clnt), "%d", sd_clnt); 
+          snprintf(sd_audit_str, sizeof(sd_audit), "%d", sd_audit); 
+
+          execl ("subMirror", sd_clnt_str, sd_audit_str, NULL);
         }
       // calls Pass the 'sd_clnt'  and  'sd_audit' to that subServer
 
