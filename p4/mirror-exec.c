@@ -45,7 +45,7 @@ main (int argc, char *argv[])
   printf ("\tAuditor Server IP is '%s'\n", auditorIP);
 
   // Create a TCP socket bound to this local port MIRROR_TCP_PORT
-  sd_listen = socketTCP (MIRROR_TCP_PORT, MIRROR_IP, 0);
+  sd_listen = socketTCP (MIRROR_TCP_PORT, NULL, 0);
 
   // Now, start listening on this TCP port
   Listen (sd_listen, queLen);
@@ -57,7 +57,7 @@ main (int argc, char *argv[])
 
   // Create a UDP socket with ephemeral port, but 'connected' to the Auditor
   // server
-  sd_audit = socketUDP (4444, AUDITOR_IP, AUDITOR_UDP_PORT);
+  sd_audit = socketUDP (0, AUDITOR_IP, AUDITOR_UDP_PORT);
   
 
   /* Let reaper clean up after completed child processes */
@@ -107,13 +107,11 @@ main (int argc, char *argv[])
       else if (pid == 0)
         {
           // Child
-          char sd_clnt_str[sizeof(sd_clnt)];
-          memset (sd_clnt_str, 0, sizeof (sd_clnt_str));
-          char sd_audit_str[sizeof(sd_audit)];
-          memset (sd_audit_str, 0, sizeof (sd_audit_str));
+          char sd_clnt_str[20];
+          char sd_audit_str[20];
 
-          snprintf(sd_clnt_str, sizeof(sd_clnt), "%d", sd_clnt); 
-          snprintf(sd_audit_str, sizeof(sd_audit), "%d", sd_audit); 
+          snprintf(sd_clnt_str, 20, "%d", sd_clnt); 
+          snprintf(sd_audit_str, 20, "%d", sd_audit); 
 
           execl ("subMirror", sd_clnt_str, sd_audit_str, NULL);
         }

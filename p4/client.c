@@ -55,27 +55,28 @@ main (int argc, char *argv[])
 
   // Open the input file and create the copy file by same name.copy
   fd_in = open (inFile, O_RDONLY);
-  char cpy_name[strlen (inFile) + strlen (".copy") + 1];
-  strncpy (cpy_name, inFile, strlen (inFile));
-  strncpy (cpy_name + strlen (inFile), ".copy",
-           sizeof (cpy_name) - strlen (inFile));
-  fd_cpy = open (cpy_name, O_CREAT, O_WRONLY);
+  printf("in file: %d\n", fd_in);
+  char cpy_name[50];
+  snprintf(cpy_name, sizeof(cpy_name), "%s.copy", inFile);
+  printf("%s\n", cpy_name);
+  fd_cpy = open (cpy_name, O_CREAT | O_WRONLY | O_TRUNC, 0777);
+  printf("fd cp %d", fd_cpy);
 
   // Use sockettCP() to create a local TCP socket with ephemeral port, and
   // connect it to the mirror server at  mirrorIP : MIRROR_TCP_PORT
 
   puts ("");
-  sd_mirror = socketTCP (55555, MIRROR_IP, MIRROR_TCP_PORT); // second Arg?
+  sd_mirror = socketTCP (0, MIRROR_IP, MIRROR_TCP_PORT); // second Arg?
   printf ("TCP Client is now connected to the TCP Mirror server %s : %hu\n",
           MIRROR_IP, MIRROR_TCP_PORT);
 
-  {
+  
     // This block to be implemented in Phase Two
 
     // Use socketUDP to created an ephemeral local UDP socket and restrict
     // its peer to the Auditor server
-    sd_audit = socketUDP (55556, AUDITOR_IP, AUDITOR_UDP_PORT);
-  }
+    sd_audit = socketUDP (0, AUDITOR_IP, AUDITOR_UDP_PORT);
+  
 
   // Now, Start moving data: fd_in ==> sd_mirror ==> fd_cpy
   // While logging all send and receive transactions to
@@ -85,7 +86,7 @@ main (int argc, char *argv[])
   puts ("TCP Client finished sending the local file to the TCP Mirror server");
   // Close( sd_mirror ) ;  // Observe the traffic when we use close() vs
   // shutdown()
-  shutdown (sd_mirror, SHUT_WR);
+  //shutdown (sd_mirror, SHUT_WR);
   puts ("\nTCP Client closed the connection to the TCP Mirror server\n");
 
   return 0;
@@ -143,8 +144,9 @@ mirrorFile (int in, int mirror, int copy, int audit)
       // Get up to CHUNK_SZ bytes from input file  and send ALL of what I get
       // to the 'mirror' socket
       ssize_t numRead = Read (in, buf, CHUNK_SZ);
-      writen (mirror, buf, numRead);
-
+      printf("bytes read: %ld\n", numRead);
+      ssize_t numWrite = writen (mirror, buf, numRead);
+      printf("send to mirror : %ld\n", numWrite);
       // This block to be implemented in Phase Two
 
       // by setting the fields of 'activity'
@@ -152,11 +154,12 @@ mirrorFile (int in, int mirror, int copy, int audit)
       activity.op = 1;
       activity.nBytes = numRead;
       activity.ip = mySocket.sin_addr.s_addr;
-      sendto(mirror, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
+      sendto(audit, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
+      puts("finished sending to auditor\n");
 
       // Now read from 'mirror' EXACTLY the same number of bytes I sent earlier
       Readn (mirror, buf2, numRead);
-
+      puts("did we make it\n");
       // This block to be implemented in Phase Two
 
       // Report this receiving activity to the Auditor
@@ -164,7 +167,7 @@ mirrorFile (int in, int mirror, int copy, int audit)
       activity.op = 2;
       activity.nBytes = numRead;
       activity.ip = mySocket.sin_addr.s_addr;
-      sendto(mirror, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
+      sendto(audit, &activity, sizeof(audit_t), 0, (SA*)&mirrorServer, alen);
 
       // Finally, save a copy of what I received back to the 'copy' file
       writen (copy, buf2, numRead);
