@@ -1,0 +1,13 @@
+### ****  Auditor Server **** by Abigail Ensogna and Elvis Masinovic has started
+### Activity By 127.0.0.1        :38410   ...       Sent      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :40783   ...   Received      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :38410   ...   Received      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :40783   ...       Sent      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :38410   ...       Sent      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :40783   ...   Received      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :40783   ...       Sent      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :38410   ...   Received      1000 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :38410   ...       Sent       402 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :40783   ...   Received       402 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :40783   ...       Sent       402 Bytes. Peer's IP: 127.0.0.1
+### Activity By 127.0.0.1        :38410   ...   Received       402 Bytes. Peer's IP: 127.0.0.1
