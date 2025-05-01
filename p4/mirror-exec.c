@@ -113,7 +113,7 @@ main (int argc, char *argv[])
           snprintf(sd_clnt_str, 20, "%d", sd_clnt); 
           snprintf(sd_audit_str, 20, "%d", sd_audit); 
 
-          execl ("subMirror", sd_clnt_str, sd_audit_str, NULL);
+          execl ("./subMirror", "subMirror", sd_clnt_str, sd_audit_str, NULL);
         }
       // calls Pass the 'sd_clnt'  and  'sd_audit' to that subServer
 

@@ -60,6 +60,9 @@ main (int argc, char *argv[])
       // Get a chunk of data from the client. Wisely choose which
       // variant of the read() wrappers to use here
       ssize_t numRead = Read (sd, chunk, CHUNK_SZ);
+      if (numRead == 0) {
+        break;
+      }
 
       // This block to be implemented in Phase Two
 
