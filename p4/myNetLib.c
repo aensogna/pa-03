@@ -334,8 +334,8 @@ int socketUDP( uint16_t s_port , const char *remoteIP, uint16_t d_port )
                       sd , ipStr , ntohs( localAddr.sin_port ) ) ;
             err_sys( buff ) ;    
         }
-        //printf("UDP socket %u is bound to local %s : %hu\n" , 
-        //        sd , ipStr , ntohs( localAddr.sin_port ) ) ;
+        printf("UDP socket %u is bound to local %s : %hu\n" , 
+                sd , ipStr , ntohs( localAddr.sin_port ) ) ;
     }
 
     // If desired, connect to remoteIP:port

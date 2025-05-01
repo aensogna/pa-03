@@ -33,7 +33,7 @@ main (int argc, char *argv[])
   switch (argc)
     {
     case 2:
-      auditorIP = argv[2];
+      auditorIP = argv[1];
 
     case 1:
 
@@ -57,7 +57,7 @@ main (int argc, char *argv[])
 
   // Create a UDP socket with ephemeral port, but 'connected' to the Auditor
   // server
-  sd_audit = socketUDP (0, AUDITOR_IP, AUDITOR_UDP_PORT);
+  sd_audit = socketUDP (0, auditorIP, AUDITOR_UDP_PORT);
   
 
   /* Let reaper clean up after completed child processes */
@@ -96,7 +96,7 @@ main (int argc, char *argv[])
         }
 
       // Display IP : Port of the client
-      printf ("%s : %hu\n", ipStr, ntohs (clientSocket.sin_port));
+      printf ("\nServer just accepted connection from %s : %hu\n", ipStr, ntohs (clientSocket.sin_port));
 
       // Delegate a sub-server child process to handle this client
       // Start a subMirror server using one of the 'exec' family of system

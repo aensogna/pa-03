@@ -66,16 +66,16 @@ main (int argc, char *argv[])
   // connect it to the mirror server at  mirrorIP : MIRROR_TCP_PORT
 
   puts ("");
-  sd_mirror = socketTCP (0, MIRROR_IP, MIRROR_TCP_PORT); // second Arg?
+  sd_mirror = socketTCP (0, mirrorIP, MIRROR_TCP_PORT); // second Arg?
   printf ("TCP Client is now connected to the TCP Mirror server %s : %hu\n",
-          MIRROR_IP, MIRROR_TCP_PORT);
+          mirrorIP, MIRROR_TCP_PORT);
 
   
     // This block to be implemented in Phase Two
 
     // Use socketUDP to created an ephemeral local UDP socket and restrict
     // its peer to the Auditor server
-  sd_audit = socketUDP (0, AUDITOR_IP, AUDITOR_UDP_PORT);
+  sd_audit = socketUDP (0, auditorIP, AUDITOR_UDP_PORT);
   
 
   // Now, Start moving data: fd_in ==> sd_mirror ==> fd_cpy
