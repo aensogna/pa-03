@@ -64,7 +64,7 @@ main (int argc, char *argv[])
   sigactionWrapper (SIGCHLD, &reaper);
 
   /* Let killHandler() handle CTRL-C or a KILL command from terminal*/
-  sigactionWrapper (SIGKILL, &killHandler);
+  sigactionWrapper (SIGTERM, &killHandler);
 
   // For ever, wait till clients connect to me
   // Will only terminate when I receive a 'SIGTERM'
