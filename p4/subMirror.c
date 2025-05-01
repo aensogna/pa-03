@@ -74,7 +74,7 @@ main (int argc, char *argv[])
       writen(sd_audit, &activity, sizeof(activity)); 
 
       // send all bytes received above back to the client
-      write (sd, chunk, numRead);
+      writen(sd, chunk, numRead);
 
       // This block to be implemented in Phase Two
 

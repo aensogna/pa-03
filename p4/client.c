@@ -144,7 +144,6 @@ mirrorFile (int in, int mirror, int copy, int audit)
       // Get up to CHUNK_SZ bytes from input file  and send ALL of what I get
       // to the 'mirror' socket
       ssize_t numRead = Read (in, buf, CHUNK_SZ);
-      printf("%d", numRead);
       if (numRead == 0){
         break; 
       }
